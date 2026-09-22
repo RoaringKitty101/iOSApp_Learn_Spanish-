@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
-import { Award, Flame, BookCheck, Volume2, Star, Settings, RotateCcw, Download, CheckCircle, Sparkles } from 'lucide-react';
+import { Award, Flame, BookCheck, Volume2, Star, Settings, RotateCcw, Download, CheckCircle, Sparkles, Bell, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { UserProgress } from '../types';
 import { allCurriculumVocabulary } from '../data/curriculum';
 import { speakSpanish, playHapticSound } from '../utils/audio';
+import { StatsSection } from './StatsSection';
 
 interface ProfileViewProps {
   progress: UserProgress;
   onUpdateProgress: (newProgress: Partial<UserProgress>) => void;
   onResetProgress: () => void;
+  onTriggerTestReminder?: () => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
   progress,
   onUpdateProgress,
   onResetProgress,
+  onTriggerTestReminder,
 }) => {
   const [userName, setUserName] = useState('Estudiante de Español');
   const [showCertificate, setShowCertificate] = useState(false);
@@ -110,6 +113,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
       </div>
 
+      {/* 30-Day Progress & Study-Time Analytics (Recharts) */}
+      <StatsSection progress={progress} />
+
       {/* Fluency Certificate CTA */}
       <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-300 dark:border-amber-700/50 p-4 rounded-3xl flex items-center justify-between gap-3">
         <div className="space-y-0.5">
@@ -189,6 +195,115 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             className="w-full accent-[#007AFF]"
           />
         </div>
+      </div>
+
+      {/* Daily Reminder Notification Setting */}
+      <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <Bell className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Aviso Diario de Lección
+              </h3>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                Alerta en pantalla para no perder tu racha 🔥
+              </p>
+            </div>
+          </div>
+
+          {/* iOS Toggle Switch */}
+          <button
+            onClick={() => {
+              playHapticSound('tap');
+              const nextState = progress.dailyReminderEnabled === false ? true : false;
+              onUpdateProgress({ dailyReminderEnabled: nextState });
+            }}
+            className={`w-12 h-6.5 rounded-full transition-colors relative flex items-center px-0.5 cursor-pointer ${
+              progress.dailyReminderEnabled !== false
+                ? 'bg-[#34C759]'
+                : 'bg-slate-300 dark:bg-slate-700'
+            }`}
+            aria-label="Activar o desactivar recordatorio diario"
+          >
+            <div
+              className={`w-5.5 h-5.5 rounded-full bg-white shadow-md transform transition-transform ${
+                progress.dailyReminderEnabled !== false ? 'translate-x-5.5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+
+        {progress.dailyReminderEnabled !== false && (
+          <div className="space-y-3 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+            {/* Time Picker */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Hora del Aviso:
+                </span>
+              </div>
+
+              <input
+                type="time"
+                value={progress.dailyReminderTime || '20:00'}
+                onChange={(e) => {
+                  playHapticSound('tap');
+                  onUpdateProgress({ dailyReminderTime: e.target.value });
+                }}
+                className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white px-2.5 py-1 rounded-xl text-xs font-bold font-mono border border-slate-200 dark:border-slate-700 focus:outline-hidden focus:border-[#007AFF]"
+              />
+            </div>
+
+            {/* Quick Preset Buttons */}
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { label: '7:00 PM', value: '19:00' },
+                { label: '8:00 PM (Defecto)', value: '20:00' },
+                { label: '9:00 PM', value: '21:00' },
+              ].map((preset) => {
+                const isSelected = (progress.dailyReminderTime || '20:00') === preset.value;
+                return (
+                  <button
+                    key={preset.value}
+                    onClick={() => {
+                      playHapticSound('tap');
+                      onUpdateProgress({ dailyReminderTime: preset.value });
+                    }}
+                    className={`py-1.5 px-2 rounded-xl text-[11px] font-semibold transition-all border ${
+                      isSelected
+                        ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-500 text-amber-800 dark:text-amber-300'
+                        : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="p-2.5 bg-amber-50/70 dark:bg-amber-950/30 rounded-2xl border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-900 dark:text-amber-200 flex items-start justify-between gap-2">
+              <p className="leading-snug">
+                Si no has completado la meta del <strong>Día {progress.currentDay}</strong> para las{' '}
+                <strong>{progress.dailyReminderTime || '20:00'} (8 PM)</strong>, aparecerá una notificación toast en pantalla para recordar tu práctica.
+              </p>
+              {onTriggerTestReminder && (
+                <button
+                  onClick={() => {
+                    playHapticSound('tap');
+                    onTriggerTestReminder();
+                  }}
+                  className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-[10px] shrink-0 shadow-2xs transition-colors"
+                >
+                  Probar
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bookmarked Vocabulary List */}

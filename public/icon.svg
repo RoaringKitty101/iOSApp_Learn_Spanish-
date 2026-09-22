@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#007AFF" />
+      <stop offset="50%" stop-color="#0051C7" />
+      <stop offset="100%" stop-color="#00358E" />
+    </linearGradient>
+    <linearGradient id="flagGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700" />
+      <stop offset="100%" stop-color="#FFA500" />
+    </linearGradient>
+    <linearGradient id="flagRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF3B30" />
+      <stop offset="100%" stop-color="#D70015" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- iOS App Icon Squircle / Base -->
+  <rect width="512" height="512" rx="114" fill="url(#bgGrad)" />
+
+  <!-- Subtle Inner Glow -->
+  <rect x="8" y="8" width="496" height="496" rx="106" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="4" />
+
+  <!-- Center Card / Book Shape -->
+  <g filter="url(#shadow)">
+    <!-- Spanish Ribbon / Accent Badge -->
+    <rect x="136" y="100" width="240" height="26" rx="8" fill="url(#flagRed)" />
+    <rect x="136" y="126" width="240" height="40" rx="4" fill="url(#flagGold)" />
+    <rect x="136" y="166" width="240" height="26" rx="8" fill="url(#flagRed)" />
+
+    <!-- Open Book / Speech Bubble Composite -->
+    <path d="M156 220 C156 206 168 196 182 196 L330 196 C344 196 356 206 356 220 L356 360 C356 372 344 382 332 380 L264 366 C258 365 254 365 248 366 L180 380 C168 382 156 372 156 360 Z" fill="#FFFFFF" />
+
+    <!-- Center Spine Divider -->
+    <line x1="256" y1="210" x2="256" y2="355" stroke="#E5E5EA" stroke-width="4" stroke-linecap="round" />
+
+    <!-- 30 Days Star / Number Motif -->
+    <circle cx="256" cy="285" r="42" fill="#007AFF" />
+    <text x="256" y="297" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="900" fill="#FFFFFF" text-anchor="middle">30</text>
+  </g>
+
+  <!-- Bottom Brand Text -->
+  <text x="256" y="446" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="38" font-weight="800" letter-spacing="4" fill="#FFFFFF" text-anchor="middle">APRENDE</text>
+  <text x="256" y="474" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="700" letter-spacing="3" fill="#70B4FF" text-anchor="middle">ESPAÑOL iOS</text>
+</svg>

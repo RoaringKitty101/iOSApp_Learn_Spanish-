@@ -48,13 +48,25 @@ export const TodayView: React.FC<TodayViewProps> = ({
         </div>
 
         {/* Streak Pill */}
-        <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 px-3 py-1.5 rounded-full shadow-xs">
-          <span className="text-base">🔥</span>
+        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-xs border ${
+          progress.streak > 0
+            ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/15 border-amber-500/30'
+            : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+        }`}>
+          <span className={`text-base ${progress.streak > 0 ? 'animate-pulse' : 'opacity-40 grayscale'}`}>🔥</span>
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-amber-700 dark:text-amber-300 leading-none">
+            <span className={`text-xs font-bold leading-none ${
+              progress.streak > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500 dark:text-slate-400'
+            }`}>
               {progress.streak} {progress.streak === 1 ? 'día' : 'días'}
             </span>
-            <span className="text-[9px] text-amber-600/80 dark:text-amber-400/80 font-medium">Racha activa</span>
+            <span className="text-[9px] text-amber-600/80 dark:text-amber-400/80 font-medium">
+              {progress.lastCompletedDate === new Date().toISOString().split('T')[0]
+                ? 'Completada hoy'
+                : progress.streak > 0
+                ? '¡Completa hoy!'
+                : 'Inicia tu racha'}
+            </span>
           </div>
         </div>
       </div>

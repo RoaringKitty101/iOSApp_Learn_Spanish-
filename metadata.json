@@ -2,5 +2,7 @@
   "name": "Aprende: 30-Day Spanish",
   "description": "An iOS-designed 30-day Spanish language accelerator featuring structured daily lessons, native audio pronunciation, smart flashcards, interactive quizzes, and an AI conversational partner.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

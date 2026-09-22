@@ -68,12 +68,15 @@ export interface UserProgress {
   currentDay: number;
   streak: number;
   lastActiveDate: string;
+  lastCompletedDate?: string;
   masteredVocab: string[];
   bookmarkedVocab: string[];
   quizScores: Record<number, number>; // day -> score percent
   totalMinutesPracticed: number;
   dialectPreference: 'es-ES' | 'es-MX';
   speechRate: number; // 0.8 to 1.2
+  dailyReminderEnabled?: boolean;
+  dailyReminderTime?: string; // 'HH:MM' (default '20:00' for 8 PM)
 }
 
 export interface ChatMessage {

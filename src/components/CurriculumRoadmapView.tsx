@@ -1,19 +1,27 @@
 import React, { useState } from 'react';
-import { CheckCircle2, ChevronRight, Sparkles, Trophy, BookOpen, Clock } from 'lucide-react';
-import { UserProgress, DayLesson } from '../types';
-import { CURRICULUM_PHASES, allCurriculumLessons } from '../data/curriculum';
+import { CheckCircle2, ChevronRight, Trophy, Clock } from 'lucide-react';
+import { UserProgress, DayLesson, SupportedLanguage } from '../types';
+import { getCurriculumPhases, getCurriculumLessons } from '../data/curriculum';
 import { playHapticSound } from '../utils/audio';
+import { getLessonTitle } from '../utils/langHelper';
+import { SUPPORTED_LANGUAGES } from '../data/languages';
+import { LanguageSelector } from './LanguageSelector';
 
 interface CurriculumRoadmapViewProps {
   progress: UserProgress;
   onOpenLesson: (day: number) => void;
+  onSelectLanguage: (lang: SupportedLanguage) => void;
 }
 
 export const CurriculumRoadmapView: React.FC<CurriculumRoadmapViewProps> = ({
   progress,
   onOpenLesson,
+  onSelectLanguage,
 }) => {
   const [activeWeek, setActiveWeek] = useState<number>(1);
+  const currentLang = SUPPORTED_LANGUAGES[progress.language] || SUPPORTED_LANGUAGES.es;
+  const curriculumLessons = getCurriculumLessons(progress.language);
+  const curriculumPhases = getCurriculumPhases(progress.language);
 
   const handleDayClick = (dayNumber: number) => {
     playHapticSound('tap');
@@ -22,40 +30,49 @@ export const CurriculumRoadmapView: React.FC<CurriculumRoadmapViewProps> = ({
 
   return (
     <div className="flex-1 overflow-y-auto px-4 pt-3 pb-8 space-y-4">
-      {/* View Header */}
-      <div>
-        <span className="text-[11px] font-bold uppercase tracking-wider text-[#007AFF]">
-          Ruta de Aprendizaje
-        </span>
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          Plan de 30 Días
-        </h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Estructura progresiva desde principiante (A1) hasta conversación fluida (B1).
-        </p>
+      {/* View Header with Language Switcher */}
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#007AFF]">
+            Learning Roadmap
+          </span>
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            {currentLang.name} 30-Day Plan
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Progressive mastery from beginner (A1) to conversational fluency (B1).
+          </p>
+        </div>
+
+        <LanguageSelector
+          progress={progress}
+          onSelectLanguage={onSelectLanguage}
+          variant="pill"
+        />
       </div>
 
       {/* Week Selector Chips (iOS Segmented Style) */}
       <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl select-none">
-        {CURRICULUM_PHASES.map((phase) => {
+        {curriculumPhases.map((phase) => {
           const isSelected = activeWeek === phase.week;
-          const weekLessons = allCurriculumLessons.filter((l) => l.week === phase.week);
+          const weekLessons = curriculumLessons.filter((l) => l.week === phase.week);
           const completedInWeek = weekLessons.filter((l) => progress.completedDays.includes(l.day)).length;
 
           return (
             <button
               key={phase.week}
+              id={`curriculum-tab-week-${phase.week}`}
               onClick={() => {
                 playHapticSound('tap');
                 setActiveWeek(phase.week);
               }}
-              className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
+              className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
                 isSelected
-                  ? 'bg-white dark:bg-[#1c1c1e] text-slate-900 dark:text-white shadow-xs'
+                  ? 'bg-white dark:bg-[#1c1c1e] text-slate-900 dark:text-white shadow-2xs'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
               }`}
             >
-              <span>Sem. {phase.week}</span>
+              <span>Week {phase.week}</span>
               <span className="block text-[9px] font-normal opacity-70">
                 {completedInWeek}/{weekLessons.length}
               </span>
@@ -66,21 +83,26 @@ export const CurriculumRoadmapView: React.FC<CurriculumRoadmapViewProps> = ({
 
       {/* Selected Week Detailed Phase Banner */}
       {(() => {
-        const phase = CURRICULUM_PHASES.find((p) => p.week === activeWeek) || CURRICULUM_PHASES[0];
-        const weekLessons = allCurriculumLessons.filter((l) => l.week === phase.week);
+        const phase = curriculumPhases.find((p) => p.week === activeWeek) || curriculumPhases[0];
+        const weekLessons = curriculumLessons.filter((l) => l.week === phase.week);
+        const targetPhaseTitle = progress.language === 'de' ? (phase.titleDe || phase.titleTarget) : (phase.titleEs || phase.titleTarget);
 
         return (
           <div className="space-y-3">
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-sm">
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-xs">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-sky-400">
-                  {phase.daysRange} • Nivel {phase.cefr}
+                  {phase.daysRange} • Level {phase.cefr}
                 </span>
                 <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full text-slate-200">
-                  Semana {phase.week}
+                  Week {phase.week}
                 </span>
               </div>
-              <h2 className="text-lg font-extrabold text-white">{phase.titleEs}</h2>
+              <h2 className="text-lg font-extrabold text-white">Week {phase.week}: {phase.titleEn}</h2>
+              <p className="text-xs text-sky-300 font-semibold mt-0.5 flex items-center gap-1">
+                <span>{currentLang.flag}</span>
+                <span>{targetPhaseTitle}</span>
+              </p>
               <p className="text-xs text-slate-300 mt-1">{phase.description}</p>
             </div>
 
@@ -90,14 +112,16 @@ export const CurriculumRoadmapView: React.FC<CurriculumRoadmapViewProps> = ({
                 const isCompleted = progress.completedDays.includes(lesson.day);
                 const isCurrent = progress.currentDay === lesson.day;
                 const score = progress.quizScores[lesson.day];
+                const targetTitle = getLessonTitle(lesson, progress.language);
 
                 return (
                   <div
                     key={lesson.day}
+                    id={`roadmap-day-card-${lesson.day}`}
                     onClick={() => handleDayClick(lesson.day)}
                     className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 group active:scale-[0.99] ${
                       isCurrent
-                        ? 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-400 dark:border-blue-700 shadow-xs'
+                        ? 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-400 dark:border-blue-700 shadow-2xs'
                         : isCompleted
                         ? 'bg-white dark:bg-[#1c1c1e] border-slate-200/80 dark:border-slate-800'
                         : 'bg-white/60 dark:bg-[#1c1c1e]/60 border-slate-200/60 dark:border-slate-800/60 opacity-90'
@@ -106,7 +130,7 @@ export const CurriculumRoadmapView: React.FC<CurriculumRoadmapViewProps> = ({
                     {/* Left Day Badge */}
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-2xl flex items-center justify-center font-extrabold text-sm transition-transform group-hover:scale-105 ${
+                        className={`w-10 h-10 rounded-2xl flex items-center justify-center font-extrabold text-sm transition-transform group-hover:scale-105 shrink-0 ${
                           isCompleted
                             ? 'bg-emerald-500 text-white shadow-xs'
                             : isCurrent
@@ -127,7 +151,7 @@ export const CurriculumRoadmapView: React.FC<CurriculumRoadmapViewProps> = ({
                       <div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                            Día {lesson.day}
+                            Day {lesson.day}
                           </span>
                           <span className="text-[10px] text-slate-300 dark:text-slate-600">•</span>
                           <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-0.5">
@@ -135,21 +159,22 @@ export const CurriculumRoadmapView: React.FC<CurriculumRoadmapViewProps> = ({
                           </span>
                           {lesson.category === 'Milestone' && (
                             <span className="text-[9px] bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold px-1.5 rounded">
-                              Hito
+                              Milestone
                             </span>
                           )}
                         </div>
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight mt-0.5">
-                          {lesson.titleEs}
-                        </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
                           {lesson.titleEn}
+                        </h3>
+                        <p className="text-xs font-semibold text-[#007AFF] line-clamp-1 flex items-center gap-1 mt-0.5">
+                          <span className="opacity-80">{currentLang.flag}</span>
+                          <span>{targetTitle}</span>
                         </p>
                       </div>
                     </div>
 
                     {/* Right Action / Score */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       {score !== undefined && (
                         <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                           {score}%

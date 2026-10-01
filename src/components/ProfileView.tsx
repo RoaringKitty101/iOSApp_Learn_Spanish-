@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { Award, Flame, BookCheck, Volume2, Star, Settings, RotateCcw, Download, CheckCircle, Sparkles, Bell, Clock } from 'lucide-react';
+import { Award, Flame, BookCheck, Volume2, Star, Settings, RotateCcw, Download, CheckCircle, Sparkles, Bell, Clock, Globe } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { UserProgress } from '../types';
-import { allCurriculumVocabulary } from '../data/curriculum';
-import { speakSpanish, playHapticSound } from '../utils/audio';
+import { UserProgress, SupportedLanguage } from '../types';
+import { getAllCurriculumVocabulary } from '../data/curriculum';
+import { speakText, playHapticSound } from '../utils/audio';
+import { getTargetText } from '../utils/langHelper';
+import { SUPPORTED_LANGUAGES } from '../data/languages';
+import { LanguageSelector } from './LanguageSelector';
 import { StatsSection } from './StatsSection';
 
 interface ProfileViewProps {
   progress: UserProgress;
   onUpdateProgress: (newProgress: Partial<UserProgress>) => void;
   onResetProgress: () => void;
+  onSelectLanguage: (lang: SupportedLanguage) => void;
   onTriggerTestReminder?: () => void;
 }
 
@@ -17,26 +21,32 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   progress,
   onUpdateProgress,
   onResetProgress,
+  onSelectLanguage,
   onTriggerTestReminder,
 }) => {
-  const [userName, setUserName] = useState('Estudiante de Español');
+  const currentLang = SUPPORTED_LANGUAGES[progress.language] || SUPPORTED_LANGUAGES.es;
+  const isGerman = progress.language === 'de';
+
+  const [userName, setUserName] = useState(`${currentLang.name} Learner`);
   const [showCertificate, setShowCertificate] = useState(false);
 
   const completedCount = progress.completedDays.length;
   const percentComplete = Math.round((completedCount / 30) * 100);
 
   // CEFR Calculation
-  let currentLevel = 'A1 Principiante';
-  if (completedCount >= 22) currentLevel = 'B1 Intermedio Fluido';
-  else if (completedCount >= 10) currentLevel = 'A2 Elemental';
+  let currentLevel = 'A1 Beginner';
+  if (completedCount >= 22) currentLevel = 'B1 Intermediate Fluency';
+  else if (completedCount >= 10) currentLevel = 'A2 Elementary';
 
-  const bookmarkedItems = allCurriculumVocabulary.filter((v) =>
+  const allVocab = getAllCurriculumVocabulary(progress.language);
+  const bookmarkedItems = allVocab.filter((v) =>
     progress.bookmarkedVocab.includes(v.id)
   );
 
   const handleSpeak = (text: string) => {
     playHapticSound('tap');
-    speakSpanish(text, {
+    speakText(text, {
+      lang: progress.language,
       dialect: progress.dialectPreference,
       rate: progress.speechRate,
     });
@@ -55,26 +65,88 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   return (
     <div className="flex-1 overflow-y-auto px-4 pt-3 pb-8 space-y-4">
       {/* Header Profile card */}
-      <div className="bg-white dark:bg-[#1c1c1e] p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#007AFF] to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-md shadow-blue-500/25">
-          🇪🇸
-        </div>
-        <div className="flex-1">
-          <input
-            type="text"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            className="text-base font-extrabold text-slate-900 dark:text-white bg-transparent border-b border-transparent hover:border-slate-300 focus:border-[#007AFF] outline-hidden px-0.5"
-            placeholder="Tu Nombre"
-          />
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-[11px] font-bold text-[#007AFF] bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-full">
-              {currentLevel}
-            </span>
-            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-              🔥 {progress.streak} {progress.streak === 1 ? 'día' : 'días'}
-            </span>
+      <div className="bg-white dark:bg-[#1c1c1e] p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5 flex-1">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#007AFF] to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-md shadow-blue-500/25 shrink-0">
+            {currentLang.flag}
           </div>
+          <div className="flex-1 min-w-0">
+            <input
+              id="profile-user-name-input"
+              type="text"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              className="text-base font-extrabold text-slate-900 dark:text-white bg-transparent border-b border-transparent hover:border-slate-300 focus:border-[#007AFF] outline-hidden px-0.5 w-full"
+              placeholder="Your Name"
+            />
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-[11px] font-bold text-[#007AFF] bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-full">
+                {currentLevel}
+              </span>
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                🔥 {progress.streak} {progress.streak === 1 ? 'day' : 'days'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <LanguageSelector
+          progress={progress}
+          onSelectLanguage={onSelectLanguage}
+          variant="pill"
+        />
+      </div>
+
+      {/* Language Track Switcher Card */}
+      <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-[#007AFF]" />
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              Active Language Track
+            </h3>
+          </div>
+          <span className="text-[10px] font-bold text-slate-400">Switch anytime</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          {(['de', 'es'] as SupportedLanguage[]).map((langKey) => {
+            const lang = SUPPORTED_LANGUAGES[langKey];
+            const isSelected = progress.language === langKey;
+            const courseData = progress.courses?.[langKey];
+            const cCount = courseData ? courseData.completedDays.length : (isSelected ? progress.completedDays.length : 0);
+
+            return (
+              <button
+                key={langKey}
+                id={`profile-lang-card-${langKey}`}
+                onClick={() => {
+                  playHapticSound('tap');
+                  onSelectLanguage(langKey);
+                }}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                  isSelected
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 border-[#007AFF] shadow-2xs'
+                    : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">{lang.flag}</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                      {lang.name}
+                    </span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                      {cCount}/30 Days
+                    </span>
+                  </div>
+                </div>
+                {isSelected && (
+                  <span className="w-2 h-2 rounded-full bg-[#007AFF]" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -82,34 +154,34 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       <div className="grid grid-cols-3 gap-2.5">
         <div className="bg-white dark:bg-[#1c1c1e] p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-center shadow-2xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Días
+            Days
           </span>
           <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
             {completedCount}/30
           </p>
           <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
-            {percentComplete}% meta
+            {percentComplete}% goal
           </span>
         </div>
 
         <div className="bg-white dark:bg-[#1c1c1e] p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-center shadow-2xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Dominadas
+            Mastered
           </span>
           <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
             {progress.masteredVocab.length}
           </p>
-          <span className="text-[10px] text-blue-500 font-bold">Palabras</span>
+          <span className="text-[10px] text-blue-500 font-bold">Words</span>
         </div>
 
         <div className="bg-white dark:bg-[#1c1c1e] p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-center shadow-2xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Guardadas
+            Starred
           </span>
           <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
             {progress.bookmarkedVocab.length}
           </p>
-          <span className="text-[10px] text-amber-500 font-bold">Favoritas</span>
+          <span className="text-[10px] text-amber-500 font-bold">Favorites</span>
         </div>
       </div>
 
@@ -120,53 +192,60 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-300 dark:border-amber-700/50 p-4 rounded-3xl flex items-center justify-between gap-3">
         <div className="space-y-0.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 flex items-center gap-1">
-            <Sparkles className="w-3 h-3" /> Certificado Oficial B1
+            <Sparkles className="w-3 h-3" /> Official B1 Certificate
           </span>
           <h3 className="text-sm font-extrabold text-amber-950 dark:text-amber-100">
-            Aprende Spanish 30-Day Diploma
+            {currentLang.name} 30-Day Diploma
           </h3>
           <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
             {completedCount >= 30
-              ? '¡Completaste los 30 días! Tu diploma está emitido.'
-              : `Llevas ${completedCount} días completados. Puedes previsualizarlo o generarlo.`}
+              ? 'You completed all 30 days! Your diploma is ready.'
+              : `You have completed ${completedCount} of 30 days. You can preview or view your certificate.`}
           </p>
         </div>
 
         <button
+          id="view-certificate-btn"
           onClick={handleOpenCertificate}
-          className="shrink-0 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md shadow-amber-500/25 flex items-center gap-1.5 transition-colors"
+          className="shrink-0 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md shadow-amber-500/25 flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <Award className="w-4 h-4" />
-          <span>Ver</span>
+          <span>View</span>
         </button>
       </div>
 
       {/* Settings: Dialect & Speed */}
-      <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-4">
         <div className="flex items-center gap-2">
           <Settings className="w-4 h-4 text-slate-400" />
           <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            Ajustes de Voz y Dialecto
+            Audio & Speech Settings
           </h3>
         </div>
 
         {/* Dialect Selector */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
-            Dialecto de Pronunciación:
+            Pronunciation Dialect:
           </label>
           <div className="grid grid-cols-2 gap-2">
-            {[
-              { id: 'es-ES' as const, label: 'España (Castellano)', flag: '🇪🇸' },
-              { id: 'es-MX' as const, label: 'México / LatAm', flag: '🇲🇽' },
-            ].map((d) => (
+            {(isGerman
+              ? [
+                  { id: 'de-DE', label: 'Germany (Hochdeutsch)', flag: '🇩🇪' },
+                  { id: 'de-AT', label: 'Austria / Swiss', flag: '🇦🇹' },
+                ]
+              : [
+                  { id: 'es-ES', label: 'Spain (Castilian)', flag: '🇪🇸' },
+                  { id: 'es-MX', label: 'Mexico / LatAm', flag: '🇲🇽' },
+                ]
+            ).map((d) => (
               <button
                 key={d.id}
                 onClick={() => {
                   playHapticSound('tap');
                   onUpdateProgress({ dialectPreference: d.id });
                 }}
-                className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   progress.dialectPreference === d.id
                     ? 'bg-blue-50 dark:bg-blue-950/60 border-[#007AFF] text-[#007AFF]'
                     : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
@@ -182,10 +261,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         {/* Speech Speed slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-medium text-slate-600 dark:text-slate-400">Velocidad del Audio:</span>
+            <span className="font-medium text-slate-600 dark:text-slate-400">Audio Speech Rate:</span>
             <span className="font-bold text-[#007AFF]">{progress.speechRate}x</span>
           </div>
           <input
+            id="profile-speech-rate-slider"
             type="range"
             min="0.7"
             max="1.1"
@@ -198,7 +278,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       </div>
 
       {/* Daily Reminder Notification Setting */}
-      <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3.5">
+      <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
@@ -206,16 +286,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
             <div>
               <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Aviso Diario de Lección
+                Daily Lesson Reminder
               </h3>
               <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                Alerta en pantalla para no perder tu racha 🔥
+                On-screen notification to protect your streak 🔥
               </p>
             </div>
           </div>
 
           {/* iOS Toggle Switch */}
           <button
+            id="toggle-daily-reminder-btn"
             onClick={() => {
               playHapticSound('tap');
               const nextState = progress.dailyReminderEnabled === false ? true : false;
@@ -226,7 +307,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 ? 'bg-[#34C759]'
                 : 'bg-slate-300 dark:bg-slate-700'
             }`}
-            aria-label="Activar o desactivar recordatorio diario"
+            aria-label="Toggle daily reminder"
           >
             <div
               className={`w-5.5 h-5.5 rounded-full bg-white shadow-md transform transition-transform ${
@@ -243,11 +324,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-slate-400" />
                 <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                  Hora del Aviso:
+                  Reminder Time:
                 </span>
               </div>
 
               <input
+                id="daily-reminder-time-input"
                 type="time"
                 value={progress.dailyReminderTime || '20:00'}
                 onChange={(e) => {
@@ -262,18 +344,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <div className="grid grid-cols-3 gap-1.5">
               {[
                 { label: '7:00 PM', value: '19:00' },
-                { label: '8:00 PM (Defecto)', value: '20:00' },
+                { label: '8:00 PM (Default)', value: '20:00' },
                 { label: '9:00 PM', value: '21:00' },
               ].map((preset) => {
                 const isSelected = (progress.dailyReminderTime || '20:00') === preset.value;
                 return (
                   <button
                     key={preset.value}
+                    id={`reminder-preset-${preset.value.replace(':', '')}`}
                     onClick={() => {
                       playHapticSound('tap');
                       onUpdateProgress({ dailyReminderTime: preset.value });
                     }}
-                    className={`py-1.5 px-2 rounded-xl text-[11px] font-semibold transition-all border ${
+                    className={`py-1.5 px-2 rounded-xl text-[11px] font-semibold transition-all border cursor-pointer ${
                       isSelected
                         ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-500 text-amber-800 dark:text-amber-300'
                         : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
@@ -287,18 +370,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
             <div className="p-2.5 bg-amber-50/70 dark:bg-amber-950/30 rounded-2xl border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-900 dark:text-amber-200 flex items-start justify-between gap-2">
               <p className="leading-snug">
-                Si no has completado la meta del <strong>Día {progress.currentDay}</strong> para las{' '}
-                <strong>{progress.dailyReminderTime || '20:00'} (8 PM)</strong>, aparecerá una notificación toast en pantalla para recordar tu práctica.
+                If you haven't completed your <strong>Day {progress.currentDay}</strong> goal by{' '}
+                <strong>{progress.dailyReminderTime || '20:00'}</strong>, an on-screen toast reminder will encourage you to finish your lesson.
               </p>
               {onTriggerTestReminder && (
                 <button
+                  id="test-reminder-toast-btn"
                   onClick={() => {
                     playHapticSound('tap');
                     onTriggerTestReminder();
                   }}
-                  className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-[10px] shrink-0 shadow-2xs transition-colors"
+                  className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-[10px] shrink-0 shadow-2xs transition-colors cursor-pointer"
                 >
-                  Probar
+                  Test
                 </button>
               )}
             </div>
@@ -307,39 +391,45 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       </div>
 
       {/* Bookmarked Vocabulary List */}
-      <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+      <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Star className="w-4 h-4 text-amber-500 fill-current" />
             <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-              Palabras Guardadas ({bookmarkedItems.length})
+              Starred {currentLang.name} Vocabulary ({bookmarkedItems.length})
             </h3>
           </div>
         </div>
 
         {bookmarkedItems.length === 0 ? (
           <p className="text-xs text-slate-400 italic py-2 text-center">
-            No tienes palabras guardadas aún. Marca la estrella en cualquier lección.
+            No starred words yet. Tap the star icon on any card or lesson to save it here.
           </p>
         ) : (
           <div className="space-y-2 max-h-48 overflow-y-auto">
-            {bookmarkedItems.map((item) => (
-              <div
-                key={item.id}
-                className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between border border-slate-200/60 dark:border-slate-700/60"
-              >
-                <div>
-                  <p className="text-xs font-bold text-slate-900 dark:text-white">{item.es}</p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">{item.en}</p>
-                </div>
-                <button
-                  onClick={() => handleSpeak(item.es)}
-                  className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-[#007AFF]"
+            {bookmarkedItems.map((item) => {
+              const targetWord = getTargetText(item, progress.language);
+
+              return (
+                <div
+                  key={item.id}
+                  className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between border border-slate-200/60 dark:border-slate-700/60"
                 >
-                  <Volume2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">{targetWord}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{item.en}</p>
+                  </div>
+                  <button
+                    onClick={() => handleSpeak(targetWord)}
+                    className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-[#007AFF] hover:bg-blue-100 transition-colors cursor-pointer"
+                    title="Listen to pronunciation"
+                    aria-label="Listen to pronunciation"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -347,16 +437,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       {/* Reset Progress Button */}
       <div className="pt-2 text-center">
         <button
+          id="reset-progress-btn"
           onClick={() => {
-            if (confirm('¿Deseas reiniciar tu progreso de los 30 días para empezar de nuevo?')) {
+            if (confirm(`Are you sure you want to reset your 30-day ${currentLang.name} progress?`)) {
               playHapticSound('tap');
               onResetProgress();
             }
           }}
-          className="text-xs text-rose-500 hover:text-rose-700 font-semibold inline-flex items-center gap-1.5"
+          className="text-xs text-rose-500 hover:text-rose-700 font-semibold inline-flex items-center gap-1.5 cursor-pointer"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          <span>Reiniciar progreso de estudio</span>
+          <span>Reset {currentLang.name} Study Progress</span>
         </button>
       </div>
 
@@ -365,58 +456,60 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
           <div className="bg-[#fffdfa] text-slate-900 max-w-sm w-full rounded-3xl p-6 border-4 border-amber-500 shadow-2xl relative space-y-4">
             <button
+              id="close-certificate-modal-btn"
               onClick={() => setShowCertificate(false)}
-              className="absolute top-3 right-3 text-slate-400 hover:text-slate-700 text-lg font-bold w-7 h-7 flex items-center justify-center rounded-full bg-slate-100"
+              className="absolute top-3 right-3 text-slate-400 hover:text-slate-700 text-lg font-bold w-7 h-7 flex items-center justify-center rounded-full bg-slate-100 cursor-pointer"
             >
               ✕
             </button>
 
             <div className="text-center space-y-1">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-700">
-                Certificado de Competencia Lingüística
+                Certificate of Language Proficiency
               </span>
               <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                Aprende: Español en 30 Días
+                Lingua30: {currentLang.name} in 30 Days
               </h2>
               <div className="w-12 h-1 bg-amber-500 mx-auto rounded-full mt-1" />
             </div>
 
             <div className="text-center py-2 space-y-2">
-              <p className="text-xs text-slate-600">Se certifica con orgullo que:</p>
+              <p className="text-xs text-slate-600">This certifies with distinction that:</p>
               <h3 className="text-lg font-black text-[#007AFF] border-b-2 border-slate-200 pb-1">
-                {userName || 'Estudiante'}
+                {userName || 'Student'}
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                ha completado con éxito el programa intensivo de 30 días y alcanzado el nivel{' '}
-                <strong>B1 (Marco Común Europeo de Referencia)</strong> en comprensión, conversación y gramática aplicada.
+                has successfully completed the 30-day intensive curriculum, attaining{' '}
+                <strong>B1 (Common European Framework of Reference)</strong> proficiency in comprehension, conversation, and practical grammar.
               </p>
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-amber-200 text-center">
               <div>
-                <span className="text-[9px] text-slate-400 uppercase font-bold">Fecha</span>
+                <span className="text-[9px] text-slate-400 uppercase font-bold">Date</span>
                 <p className="text-xs font-bold text-slate-700">
-                  {new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  {new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
               <div className="w-12 h-12 rounded-full border-2 border-amber-500 flex items-center justify-center text-amber-700 font-extrabold text-[10px] uppercase shadow-xs">
-                ★ Sello ★
+                ★ Seal ★
               </div>
               <div>
-                <span className="text-[9px] text-slate-400 uppercase font-bold">Tutora</span>
-                <p className="text-xs font-bold text-slate-700">Sofía AI</p>
+                <span className="text-[9px] text-slate-400 uppercase font-bold">Tutor</span>
+                <p className="text-xs font-bold text-slate-700">{currentLang.tutorName}</p>
               </div>
             </div>
 
             <button
+              id="download-certificate-btn"
               onClick={() => {
                 playHapticSound('tap');
-                alert('¡Certificado listo! Puedes tomar una captura de pantalla para compartir tu logro en redes.');
+                alert('Certificate ready! You can take a screenshot on your iOS device to share your achievement.');
               }}
-              className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-colors"
+              className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-colors cursor-pointer"
             >
               <Download className="w-4 h-4" />
-              <span>Guardar / Compartir Certificado</span>
+              <span>Save / Share Certificate</span>
             </button>
           </div>
         </div>

@@ -1,6 +1,6 @@
 {
-  "name": "Aprende: 30-Day Spanish",
-  "description": "An iOS-designed 30-day Spanish language accelerator featuring structured daily lessons, native audio pronunciation, smart flashcards, interactive quizzes, and an AI conversational partner.",
+  "name": "Lingua30: 30-Day Language Accelerator",
+  "description": "An iOS-designed 30-day language accelerator for English speakers to master Spanish or German, featuring structured daily curriculums, native audio pronunciation, smart flashcards, interactive quizzes, and an AI conversation partner.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

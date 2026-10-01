@@ -94,13 +94,14 @@ export function playHapticSound(type: 'tap' | 'success' | 'complete' | 'flip' | 
   }
 }
 
-// Speak Spanish text with native Web Speech synthesis
-export function speakSpanish(
+// Speak text with native Web Speech synthesis for Spanish, German, etc.
+export function speakText(
   text: string,
   options?: {
     rate?: number;
     pitch?: number;
-    dialect?: 'es-ES' | 'es-MX';
+    dialect?: string;
+    lang?: 'es' | 'de';
     onStart?: () => void;
     onEnd?: () => void;
   }
@@ -112,26 +113,42 @@ export function speakSpanish(
   }
 
   try {
-    // Cancel ongoing speech to ensure responsiveness
     window.speechSynthesis.cancel();
 
-    // Clean punctuation for pronunciation
-    const cleanText = text.replace(/¿|¡/g, '');
+    // Clean punctuation
+    const cleanText = text.replace(/¿|¡/g, '').trim();
+    if (!cleanText) {
+      options?.onEnd?.();
+      return;
+    }
+
     const utterance = new SpeechSynthesisUtterance(cleanText);
 
-    utterance.lang = options?.dialect || 'es-ES';
-    utterance.rate = options?.rate ?? 0.9; // Slightly slower for language learners
+    // Determine target locale
+    const isGerman = options?.lang === 'de' || options?.dialect?.startsWith('de');
+    const targetLocale = options?.dialect || (isGerman ? 'de-DE' : 'es-ES');
+
+    utterance.lang = targetLocale;
+    utterance.rate = options?.rate ?? 0.9;
     utterance.pitch = options?.pitch ?? 1.0;
 
-    // Pick best matching Spanish voice if available
     const voices = window.speechSynthesis.getVoices();
-    const targetLang = options?.dialect || 'es-ES';
-    const spanishVoice = voices.find((v) => v.lang === targetLang) ||
-      voices.find((v) => v.lang.startsWith('es')) ||
-      voices.find((v) => v.name.toLowerCase().includes('spanish') || v.name.toLowerCase().includes('español'));
+    let voice: SpeechSynthesisVoice | undefined;
 
-    if (spanishVoice) {
-      utterance.voice = spanishVoice;
+    if (isGerman) {
+      voice =
+        voices.find((v) => v.lang === 'de-DE') ||
+        voices.find((v) => v.lang.startsWith('de')) ||
+        voices.find((v) => v.name.toLowerCase().includes('german') || v.name.toLowerCase().includes('deutsch'));
+    } else {
+      voice =
+        voices.find((v) => v.lang === targetLocale) ||
+        voices.find((v) => v.lang.startsWith('es')) ||
+        voices.find((v) => v.name.toLowerCase().includes('spanish') || v.name.toLowerCase().includes('español'));
+    }
+
+    if (voice) {
+      utterance.voice = voice;
     }
 
     if (options?.onStart) utterance.onstart = options.onStart;
@@ -140,7 +157,22 @@ export function speakSpanish(
 
     window.speechSynthesis.speak(utterance);
   } catch (err) {
-    console.error('Error speaking Spanish text:', err);
+    console.error('Error in speech synthesis:', err);
     options?.onEnd?.();
   }
 }
+
+// Backward compatibility alias
+export function speakSpanish(
+  text: string,
+  options?: {
+    rate?: number;
+    pitch?: number;
+    dialect?: string;
+    onStart?: () => void;
+    onEnd?: () => void;
+  }
+) {
+  return speakText(text, { ...options, lang: 'es' });
+}
+

@@ -33,79 +33,88 @@ async function startServer() {
     res.json({ status: 'ok', hasGeminiKey: Boolean(process.env.GEMINI_API_KEY) });
   });
 
-  // AI Spanish Tutor Route
+  // AI Language Tutor Route (supports German & Spanish)
   app.post('/api/tutor/chat', async (req, res) => {
     try {
-      const { messages, history, userMessage, message, currentDay, dayTitle } = req.body;
-      const effectiveUserMsg = userMessage || message || '¡Hola Sofía!';
+      const { messages, history, userMessage, message, currentDay, dayTitle, language = 'es' } = req.body;
+      const effectiveUserMsg = userMessage || message || (language === 'de' ? 'Hallo Lukas!' : '¡Hola Sofía!');
       const effectiveHistory = history || messages || [];
+      const isGerman = language === 'de';
 
       const ai = getGeminiClient();
       if (!ai) {
-        // High-quality contextual fallback when Gemini API key is not yet set
-        const simulatedReplies: Record<string, { replyEs: string; replyEn: string; tip?: string }> = {
-          default: {
-            replyEs: "¡Hola! Muy buen esfuerzo. Me alegra mucho que estés practicando tu español hoy.",
-            replyEn: "Hello! Great effort. I'm very glad you are practicing your Spanish today.",
-            tip: "Recuerda que la constancia diaria es la clave para aprender un idioma en 30 días."
-          }
-        };
-
+        // Contextual fallback when Gemini API key is not yet set
         const lowerMsg = (effectiveUserMsg || '').toLowerCase();
-        let fallback = simulatedReplies.default;
+        let fallbackReplyTarget = '';
+        let fallbackReplyEn = '';
+        let fallbackTip = '';
 
-        if (lowerMsg.includes('hola') || lowerMsg.includes('buenos')) {
-          fallback = {
-            replyEs: "¡Hola! ¿Cómo estás hoy? ¿Listo para aprender y practicar?",
-            replyEn: "Hello! How are you today? Ready to learn and practice?",
-            tip: "En español, '¿Cómo estás?' se usa con amigos, y '¿Cómo está usted?' para situaciones formales."
-          };
-        } else if (lowerMsg.includes('gracias')) {
-          fallback = {
-            replyEs: "¡De nada! Es un placer ayudarte en tu viaje de 30 días con el español.",
-            replyEn: "You're welcome! It's a pleasure to help you on your 30-day journey with Spanish.",
-            tip: "También puedes decir '¡Con gusto!' o 'No hay de qué'."
-          };
-        } else if (lowerMsg.includes('restaurante') || lowerMsg.includes('tapas') || lowerMsg.includes('comer') || lowerMsg.includes('pedir')) {
-          fallback = {
-            replyEs: "¡Excelente! En un restaurante español puedes decir: 'Por favor, ¿me trae la cuenta?' o 'Quisiera una paella'.",
-            replyEn: "Excellent! In a Spanish restaurant you can say: 'Please, could you bring me the bill?' or 'I would like a paella'.",
-            tip: "Usa 'Quisiera...' para sonar muy cortés y educado."
-          };
+        if (isGerman) {
+          if (lowerMsg.includes('hallo') || lowerMsg.includes('guten tag') || lowerMsg.includes('morgen')) {
+            fallbackReplyTarget = "Hallo! Wie geht es dir heute? Bist du bereit, Deutsch zu üben?";
+            fallbackReplyEn = "Hello! How are you today? Are you ready to practice German?";
+            fallbackTip = "In German, remember that all nouns are capitalized (z.B. der Tag, das Brot, die Zeit).";
+          } else if (lowerMsg.includes('danke')) {
+            fallbackReplyTarget = "Gern geschehen! Es ist mir ein Vergnügen, dir beim Deutschlernen zu helfen.";
+            fallbackReplyEn = "You're welcome! It's my pleasure to help you learn German.";
+            fallbackTip = "You can also say 'Bitte sehr!' or 'Nichts zu danken!'.";
+          } else if (lowerMsg.includes('restaurant') || lowerMsg.includes('essen') || lowerMsg.includes('bier') || lowerMsg.includes('bestellen')) {
+            fallbackReplyTarget = "Ausgezeichnet! Im Restaurant sagst du: 'Die Rechnung, bitte!' oder 'Ich hätte gerne ein Schnitzel'.";
+            fallbackReplyEn = "Excellent! In a restaurant you say: 'The bill, please!' or 'I would like a schnitzel'.";
+            fallbackTip = "Use 'Ich hätte gerne...' (I would like to have...) to sound very polite in German.";
+          } else {
+            fallbackReplyTarget = `Sehr gut gesagt! Du hast geübt: "${effectiveUserMsg}". Übe weiter jeden Tag für schnelle Fortschritte.`;
+            fallbackReplyEn = `Very well said! You practiced: "${effectiveUserMsg}". Keep practicing every day for rapid progress.`;
+            fallbackTip = "Keep in mind the V2 word order rule: the conjugated verb always sits in position 2 in main clauses.";
+          }
         } else {
-          fallback = {
-            replyEs: `¡Muy bien dicho! Has practicado: "${effectiveUserMsg}". Sigue practicando expresiones como esta todos los días.`,
-            replyEn: `Well said! You practiced: "${effectiveUserMsg}". Keep practicing expressions like this every day.`,
-            tip: "Intenta construir oraciones cortas usando el sujeto + verbo + predicado."
-          };
+          if (lowerMsg.includes('hola') || lowerMsg.includes('buenos')) {
+            fallbackReplyTarget = "¡Hola! ¿Cómo estás hoy? ¿Listo para aprender y practicar?";
+            fallbackReplyEn = "Hello! How are you today? Ready to learn and practice?";
+            fallbackTip = "In Spanish, '¿Cómo estás?' is casual with friends, and '¿Cómo está usted?' is for formal situations.";
+          } else if (lowerMsg.includes('gracias')) {
+            fallbackReplyTarget = "¡De nada! Es un placer ayudarte en tu viaje de 30 días con el español.";
+            fallbackReplyEn = "You're welcome! It's a pleasure to help you on your 30-day journey with Spanish.";
+            fallbackTip = "You can also say '¡Con gusto!' or 'No hay de qué'.";
+          } else if (lowerMsg.includes('restaurante') || lowerMsg.includes('tapas') || lowerMsg.includes('comer') || lowerMsg.includes('pedir')) {
+            fallbackReplyTarget = "¡Excelente! En un restaurante español puedes decir: 'Por favor, ¿me trae la cuenta?' o 'Quisiera una paella'.";
+            fallbackReplyEn = "Excellent! In a Spanish restaurant you can say: 'Please, could you bring me the bill?' or 'I would like a paella'.";
+            fallbackTip = "Use 'Quisiera...' to sound very courteous and polite.";
+          } else {
+            fallbackReplyTarget = `¡Muy bien dicho! Has practicado: "${effectiveUserMsg}". Sigue practicando expresiones como esta todos los días.`;
+            fallbackReplyEn = `Well said! You practiced: "${effectiveUserMsg}". Keep practicing expressions like this every day.`;
+            fallbackTip = "Try constructing short, clear sentences using subject + verb + predicate.";
+          }
         }
 
         return res.json({
-          reply: fallback.replyEs,
-          replyEs: fallback.replyEs,
-          translation: fallback.replyEn,
-          replyEn: fallback.replyEn,
-          feedback: fallback.tip,
+          reply: fallbackReplyTarget,
+          replyTarget: fallbackReplyTarget,
+          translation: fallbackReplyEn,
+          replyEn: fallbackReplyEn,
+          feedback: fallbackTip,
           corrections: null,
-          grammarTip: fallback.tip,
+          grammarTip: fallbackTip,
         });
       }
 
-      // Build context for Sofía
-      const systemInstruction = `You are Sofía, an engaging, warm, encouraging native Spanish conversation coach in an iOS app called "Aprende: 30-Day Spanish".
-The user is learning Spanish in a 30-day curriculum. Currently on Day ${currentDay || 1}: ${dayTitle || 'Spanish Essentials'}.
+      // Build context for AI Tutor
+      const tutorName = isGerman ? 'Lukas Schmidt' : 'Mateo Álvarez';
+      const targetLangName = isGerman ? 'German' : 'Spanish';
+      const systemInstruction = `You are ${tutorName}, an engaging, warm, encouraging native ${targetLangName} conversation coach in an iOS app called "Lingua30: 30-Day Language Accelerator".
+The user is an English speaker learning ${targetLangName} in a 30-day intensive curriculum. Currently on Day ${currentDay || 1}: ${dayTitle || `${targetLangName} Essentials`}.
 
 Your goals:
-1. Reply in natural, conversational, clear Spanish suitable for a beginner/intermediate learner.
-2. Provide an accurate English translation of your Spanish reply.
-3. If the user's Spanish input had any grammar, spelling, or vocabulary mistakes, provide a gentle, polite correction and explanation.
-4. Provide a mini practical tip or follow-up question to keep the conversation flowing.
+1. Reply in natural, conversational, clear ${targetLangName} suitable for an A1-B1 learner.
+2. Provide an accurate English translation of your ${targetLangName} reply.
+3. If the user's ${targetLangName} input had any grammar, spelling, gender (der/die/das or el/la), case, or word order mistakes, provide a gentle, polite 1-sentence correction and explanation. If their message was in English or error-free, set corrections to null.
+4. Provide a mini practical tip or follow-up question in English to keep the conversation flowing.
 
 You MUST respond strictly with a valid JSON object matching this schema:
 {
-  "replyEs": "Your response in Spanish (1 to 3 conversational sentences)",
+  "replyTarget": "Your response in ${targetLangName} (1 to 3 conversational sentences)",
   "replyEn": "English translation of your reply",
-  "corrections": "Gentle correction of user's sentence if needed, or null if their Spanish was great or in English",
+  "corrections": "Gentle correction of user's sentence if needed, or null if their ${targetLangName} was great or in English",
   "grammarTip": "A 1-sentence helpful cultural or grammar nugget related to their message"
 }`;
 
@@ -134,13 +143,14 @@ You MUST respond strictly with a valid JSON object matching this schema:
       const text = response.text || '{}';
       try {
         const parsed = JSON.parse(text);
-        const replyEs = parsed.replyEs || "¡Hola! Estoy muy feliz de conversar contigo.";
-        const replyEn = parsed.replyEn || "Hello! I am very happy to talk with you.";
+        const replyText = parsed.replyTarget || parsed.replyEs || parsed.reply || (isGerman ? "Hallo! Ich freue mich, mit dir zu sprechen." : "¡Hola! Estoy muy feliz de conversar contigo.");
+        const replyEn = parsed.replyEn || parsed.translation || (isGerman ? "Hello! I am happy to speak with you." : "Hello! I am very happy to talk with you.");
         const feedback = parsed.corrections || parsed.grammarTip || null;
 
         return res.json({
-          reply: replyEs,
-          replyEs,
+          reply: replyText,
+          replyTarget: replyText,
+          replyEs: replyText,
           translation: replyEn,
           replyEn,
           feedback,
@@ -151,9 +161,10 @@ You MUST respond strictly with a valid JSON object matching this schema:
         const clean = text.replace(/[{}"]/g, '').trim();
         return res.json({
           reply: clean,
+          replyTarget: clean,
           replyEs: clean,
-          translation: "I'm practicing Spanish with you!",
-          replyEn: "I'm practicing Spanish with you!",
+          translation: isGerman ? "Let's keep practicing German!" : "Let's keep practicing Spanish!",
+          replyEn: isGerman ? "Let's keep practicing German!" : "Let's keep practicing Spanish!",
           feedback: null,
           corrections: null,
           grammarTip: null,

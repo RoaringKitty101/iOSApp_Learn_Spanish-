@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { X, Volume2, Star, CheckCircle, ArrowRight, BookOpen, MessageCircle, HelpCircle, Trophy, Sparkles, ChevronRight } from 'lucide-react';
+import { X, Volume2, Star, CheckCircle, BookOpen, MessageCircle, HelpCircle, Trophy, Sparkles, ChevronRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { DayLesson, UserProgress, VocabularyItem, QuizQuestion } from '../types';
-import { speakSpanish, playHapticSound } from '../utils/audio';
+import { speakText, playHapticSound } from '../utils/audio';
+import { getLessonTitle, getTargetText, getTargetExample, getDialogueLineText } from '../utils/langHelper';
+import { SUPPORTED_LANGUAGES } from '../data/languages';
 
 interface LessonDetailModalProps {
   lesson: DayLesson;
@@ -24,6 +26,9 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
   const [currentTab, setCurrentTab] = useState<LessonTab>('vocab');
   const [activeSpeechText, setActiveSpeechText] = useState<string | null>(null);
 
+  const currentLang = SUPPORTED_LANGUAGES[progress.language] || SUPPORTED_LANGUAGES.es;
+  const lessonTitle = getLessonTitle(lesson, progress.language);
+
   // Quiz state
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [submittedQuiz, setSubmittedQuiz] = useState<boolean>(false);
@@ -34,7 +39,8 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
   const handleSpeak = (text: string) => {
     playHapticSound('tap');
     setActiveSpeechText(text);
-    speakSpanish(text, {
+    speakText(text, {
+      lang: progress.language,
       dialect: progress.dialectPreference,
       rate: progress.speechRate,
       onEnd: () => setActiveSpeechText(null),
@@ -83,20 +89,26 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
           <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto absolute left-1/2 -translate-x-1/2 top-2.5" />
 
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#007AFF]">
-              Día {lesson.day} • {lesson.cefr}
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#007AFF] flex items-center gap-1">
+              <span>{currentLang.flag}</span>
+              <span>Day {lesson.day} • {lesson.cefr} • Week {lesson.week}</span>
             </span>
             <h2 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight">
-              {lesson.titleEs}
+              {lesson.titleEn}
             </h2>
+            <p className="text-[11px] font-semibold text-[#007AFF] flex items-center gap-1 mt-0.5">
+              <span>{lessonTitle}</span>
+            </p>
           </div>
 
           <button
+            id="close-lesson-modal-btn"
             onClick={() => {
               playHapticSound('tap');
               onClose();
             }}
-            className="w-8 h-8 rounded-full bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-300 transition-colors"
+            className="w-8 h-8 rounded-full bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            aria-label="Close lesson"
           >
             <X className="w-4 h-4 stroke-[2.5]" />
           </button>
@@ -105,23 +117,24 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
         {/* Step Tabs Navigation */}
         <div className="flex items-center justify-around px-2 py-1.5 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 select-none">
           {[
-            { id: 'vocab' as LessonTab, label: 'Vocabulario', icon: BookOpen },
-            { id: 'grammar' as LessonTab, label: 'Gramática', icon: Sparkles },
-            { id: 'dialogue' as LessonTab, label: 'Diálogo', icon: MessageCircle },
-            { id: 'quiz' as LessonTab, label: 'Prueba', icon: HelpCircle },
+            { id: 'vocab' as LessonTab, label: 'Vocabulary', icon: BookOpen },
+            { id: 'grammar' as LessonTab, label: 'Grammar', icon: Sparkles },
+            { id: 'dialogue' as LessonTab, label: 'Dialogue', icon: MessageCircle },
+            { id: 'quiz' as LessonTab, label: 'Quiz', icon: HelpCircle },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = currentTab === tab.id;
             return (
               <button
                 key={tab.id}
+                id={`lesson-step-tab-${tab.id}`}
                 onClick={() => {
                   playHapticSound('tap');
                   setCurrentTab(tab.id);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-white dark:bg-[#1c1c1e] text-[#007AFF] shadow-xs'
+                    ? 'bg-white dark:bg-[#1c1c1e] text-[#007AFF] shadow-2xs'
                     : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
@@ -139,82 +152,90 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                  {lesson.vocabulary.length} Expresiones Fundamentales
+                  {lesson.vocabulary.length} Core Expressions
                 </span>
-                <span className="text-[11px] text-slate-400">Toca el altavoz para escuchar</span>
+                <span className="text-[11px] text-slate-400">Tap speaker for audio</span>
               </div>
 
-              {lesson.vocabulary.map((vocab: VocabularyItem) => (
-                <div
-                  key={vocab.id}
-                  className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-2.5 transition-all"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h3 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight">
-                        {vocab.es}
-                      </h3>
-                      <p className="text-xs font-semibold text-[#007AFF] mt-0.5">
-                        {vocab.en}
+              {lesson.vocabulary.map((vocab: VocabularyItem) => {
+                const targetWord = getTargetText(vocab, progress.language);
+                const targetEx = getTargetExample(vocab, progress.language);
+
+                return (
+                  <div
+                    key={vocab.id}
+                    className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-2.5 transition-all"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h3 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight">
+                          {targetWord}
+                        </h3>
+                        <p className="text-xs font-semibold text-[#007AFF] mt-0.5">
+                          {vocab.en}
+                        </p>
+                        <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                          [{vocab.phonetic}]
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => onToggleBookmark(vocab.id)}
+                          className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                            isBookmarked(vocab.id)
+                              ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/50'
+                              : 'text-slate-400 hover:text-slate-600 bg-slate-100 dark:bg-slate-800'
+                          }`}
+                          title="Bookmark word"
+                          aria-label="Bookmark word"
+                        >
+                          <Star className={`w-4 h-4 ${isBookmarked(vocab.id) ? 'fill-current' : ''}`} />
+                        </button>
+
+                        <button
+                          onClick={() => handleSpeak(targetWord)}
+                          className={`p-2 rounded-xl transition-all cursor-pointer ${
+                            activeSpeechText === targetWord
+                              ? 'bg-[#007AFF] text-white scale-105'
+                              : 'bg-blue-50 dark:bg-blue-950/50 text-[#007AFF] hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                          }`}
+                          title="Listen to pronunciation"
+                          aria-label="Listen to pronunciation"
+                        >
+                          <Volume2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Context sentence */}
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                      <p className="text-slate-700 dark:text-slate-300 font-medium">
+                        "{targetEx}"
                       </p>
-                      <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                        [{vocab.phonetic}]
+                      <p className="text-slate-400 text-[11px] italic mt-0.5">
+                        {vocab.exampleEn}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => onToggleBookmark(vocab.id)}
-                        className={`p-2 rounded-xl transition-colors ${
-                          isBookmarked(vocab.id)
-                            ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/50'
-                            : 'text-slate-400 hover:text-slate-600 bg-slate-100 dark:bg-slate-800'
-                        }`}
-                        title="Guardar palabra"
-                      >
-                        <Star className={`w-4 h-4 ${isBookmarked(vocab.id) ? 'fill-current' : ''}`} />
-                      </button>
-
-                      <button
-                        onClick={() => handleSpeak(vocab.es)}
-                        className={`p-2 rounded-xl transition-all ${
-                          activeSpeechText === vocab.es
-                            ? 'bg-[#007AFF] text-white scale-105'
-                            : 'bg-blue-50 dark:bg-blue-950/50 text-[#007AFF] hover:bg-blue-100'
-                        }`}
-                        title="Escuchar"
-                      >
-                        <Volume2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    {vocab.tip && (
+                      <div className="bg-amber-50/70 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 text-[11px] p-2 rounded-xl font-medium">
+                        💡 <strong>Native Tip:</strong> {vocab.tip}
+                      </div>
+                    )}
                   </div>
-
-                  {/* Context sentence */}
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 text-xs">
-                    <p className="text-slate-700 dark:text-slate-300 font-medium">
-                      "{vocab.exampleEs}"
-                    </p>
-                    <p className="text-slate-400 text-[11px] italic mt-0.5">
-                      {vocab.exampleEn}
-                    </p>
-                  </div>
-
-                  {vocab.tip && (
-                    <div className="bg-amber-50/70 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 text-[11px] p-2 rounded-xl font-medium">
-                      💡 <strong>Tip nativo:</strong> {vocab.tip}
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
 
               <button
+                id="lesson-next-to-grammar-btn"
                 onClick={() => {
                   playHapticSound('tap');
                   setCurrentTab('grammar');
                 }}
-                className="w-full mt-4 py-3 rounded-2xl bg-[#007AFF] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 hover:bg-blue-600"
+                className="w-full mt-4 py-3 rounded-2xl bg-[#007AFF] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 hover:bg-blue-600 transition-colors cursor-pointer"
               >
-                <span>Siguiente: Gramática Express</span>
+                <span>Next: Express Grammar</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -223,9 +244,9 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
           {/* TAB 2: GRAMMAR BITE */}
           {currentTab === 'grammar' && (
             <div className="space-y-4">
-              <div className="bg-white dark:bg-[#1c1c1e] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+              <div className="bg-white dark:bg-[#1c1c1e] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                  Concepto Clave
+                  Key Concept
                 </span>
                 <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
                   {lesson.grammar.title}
@@ -236,7 +257,7 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
 
                 {lesson.grammar.proTip && (
                   <div className="bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/50 p-3 rounded-xl text-purple-900 dark:text-purple-200 text-xs font-medium">
-                    ⚡ <strong>Regla de oro:</strong> {lesson.grammar.proTip}
+                    ⚡ <strong>Golden Rule:</strong> {lesson.grammar.proTip}
                   </div>
                 )}
               </div>
@@ -244,39 +265,46 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
               {/* Grammar Examples */}
               <div className="space-y-2">
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Ejemplos Prácticos
+                  Practical Examples
                 </h4>
-                {lesson.grammar.examples.map((eg, i) => (
-                  <div
-                    key={i}
-                    className="bg-white dark:bg-[#1c1c1e] p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="text-xs font-bold text-slate-900 dark:text-white">
-                        {eg.es}
-                      </p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        {eg.en}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleSpeak(eg.es)}
-                      className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[#007AFF] hover:bg-blue-50"
+                {lesson.grammar.examples.map((eg, i) => {
+                  const targetExample = getTargetText(eg, progress.language);
+
+                  return (
+                    <div
+                      key={i}
+                      className="bg-white dark:bg-[#1c1c1e] p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-between"
                     >
-                      <Volume2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
+                      <div>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">
+                          {targetExample}
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          {eg.en}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleSpeak(targetExample)}
+                        className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[#007AFF] hover:bg-blue-50 dark:hover:bg-slate-700 cursor-pointer"
+                        title="Listen to pronunciation"
+                        aria-label="Listen to pronunciation"
+                      >
+                        <Volume2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
 
               <button
+                id="lesson-next-to-dialogue-btn"
                 onClick={() => {
                   playHapticSound('tap');
                   setCurrentTab('dialogue');
                 }}
-                className="w-full mt-4 py-3 rounded-2xl bg-[#007AFF] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 hover:bg-blue-600"
+                className="w-full mt-4 py-3 rounded-2xl bg-[#007AFF] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 hover:bg-blue-600 transition-colors cursor-pointer"
               >
-                <span>Siguiente: Diálogo en Contexto</span>
+                <span>Next: Context Dialogue</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -287,62 +315,69 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                  Conversación en Vivo
+                  Live Native Dialogue
                 </span>
-                <span className="text-[11px] text-slate-400">Escucha a los nativos interactuar</span>
+                <span className="text-[11px] text-slate-400">Hear native interaction in context</span>
               </div>
 
               <div className="space-y-3">
-                {lesson.dialogue.map((line) => (
-                  <div
-                    key={line.id}
-                    className={`flex items-start gap-2.5 ${
-                      line.role === 'user' ? 'flex-row-reverse' : ''
-                    }`}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-sm shadow-xs shrink-0">
-                      {line.avatar}
-                    </div>
+                {lesson.dialogue.map((line) => {
+                  const targetLine = getDialogueLineText(line, progress.language);
 
+                  return (
                     <div
-                      className={`max-w-[80%] p-3.5 rounded-2xl border shadow-xs space-y-1 ${
-                        line.role === 'user'
-                          ? 'bg-[#007AFF] text-white border-blue-600 rounded-tr-none'
-                          : 'bg-white dark:bg-[#1c1c1e] text-slate-900 dark:text-white border-slate-200/80 dark:border-slate-800 rounded-tl-none'
+                      key={line.id}
+                      className={`flex items-start gap-2.5 ${
+                        line.role === 'user' ? 'flex-row-reverse' : ''
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className={`text-[10px] font-bold ${line.role === 'user' ? 'text-sky-200' : 'text-slate-400'}`}>
-                          {line.speaker}
-                        </span>
-                        <button
-                          onClick={() => handleSpeak(line.textEs)}
-                          className={`p-1 rounded-full ${
-                            line.role === 'user'
-                              ? 'text-white hover:bg-white/20'
-                              : 'text-[#007AFF] hover:bg-blue-50 dark:hover:bg-slate-800'
-                          }`}
-                        >
-                          <Volume2 className="w-3.5 h-3.5" />
-                        </button>
+                      <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-sm shadow-2xs shrink-0">
+                        {line.avatar}
                       </div>
-                      <p className="text-xs font-bold leading-relaxed">{line.textEs}</p>
-                      <p className={`text-[11px] ${line.role === 'user' ? 'text-sky-100' : 'text-slate-500 dark:text-slate-400'}`}>
-                        {line.textEn}
-                      </p>
+
+                      <div
+                        className={`max-w-[80%] p-3.5 rounded-2xl border shadow-2xs space-y-1 ${
+                          line.role === 'user'
+                            ? 'bg-[#007AFF] text-white border-blue-600 rounded-tr-none'
+                            : 'bg-white dark:bg-[#1c1c1e] text-slate-900 dark:text-white border-slate-200/80 dark:border-slate-800 rounded-tl-none'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span className={`text-[10px] font-bold ${line.role === 'user' ? 'text-sky-200' : 'text-slate-400'}`}>
+                            {line.speaker}
+                          </span>
+                          <button
+                            onClick={() => handleSpeak(targetLine)}
+                            className={`p-1 rounded-full cursor-pointer ${
+                              line.role === 'user'
+                                ? 'text-white hover:bg-white/20'
+                                : 'text-[#007AFF] hover:bg-blue-50 dark:hover:bg-slate-800'
+                            }`}
+                            title="Listen"
+                            aria-label="Listen"
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <p className="text-xs font-bold leading-relaxed">{targetLine}</p>
+                        <p className={`text-[11px] ${line.role === 'user' ? 'text-sky-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                          {line.textEn}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <button
+                id="lesson-next-to-quiz-btn"
                 onClick={() => {
                   playHapticSound('tap');
                   setCurrentTab('quiz');
                 }}
-                className="w-full mt-4 py-3 rounded-2xl bg-[#007AFF] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 hover:bg-blue-600"
+                className="w-full mt-4 py-3 rounded-2xl bg-[#007AFF] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 hover:bg-blue-600 transition-colors cursor-pointer"
               >
-                <span>Hacer Prueba Rápida</span>
+                <span>Take Quick Quiz</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -353,10 +388,10 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
             <div className="space-y-4">
               <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                  Evaluación de Comprensión
+                  Comprehension Check
                 </span>
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-0.5">
-                  Demuestra lo aprendido en el Día {lesson.day}
+                  Showcase what you learned in Day {lesson.day}
                 </h3>
               </div>
 
@@ -368,7 +403,7 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
                 return (
                   <div
                     key={q.id}
-                    className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3"
+                    className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3"
                   >
                     <div className="flex items-center gap-2">
                       <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold flex items-center justify-center">
@@ -397,7 +432,7 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
                           <button
                             key={optIdx}
                             onClick={() => handleSelectQuizOption(q.id, optIdx)}
-                            className={`w-full p-3 rounded-xl border text-left text-xs transition-all flex items-center justify-between ${btnStyle}`}
+                            className={`w-full p-3 rounded-xl border text-left text-xs transition-all flex items-center justify-between cursor-pointer ${btnStyle}`}
                           >
                             <span>{opt}</span>
                             {submittedQuiz && optIdx === q.correctIndex && (
@@ -423,18 +458,20 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
 
               {!submittedQuiz ? (
                 <button
+                  id="submit-quiz-answers-btn"
                   onClick={handleSubmitQuiz}
                   disabled={Object.keys(selectedAnswers).length < lesson.quiz.length}
-                  className="w-full py-3.5 rounded-2xl bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-700 transition-colors"
+                  className="w-full py-3.5 rounded-2xl bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-700 transition-colors cursor-pointer"
                 >
-                  Verificar Respuestas
+                  Verify Answers
                 </button>
               ) : (
                 <button
+                  id="view-quiz-results-btn"
                   onClick={() => setCurrentTab('completed')}
-                  className="w-full py-3.5 rounded-2xl bg-[#007AFF] text-white font-bold text-xs shadow-md shadow-blue-500/20 hover:bg-blue-600 transition-colors"
+                  className="w-full py-3.5 rounded-2xl bg-[#007AFF] text-white font-bold text-xs shadow-md shadow-blue-500/20 hover:bg-blue-600 transition-colors cursor-pointer"
                 >
-                  Ver Resultado Final
+                  View Final Results
                 </button>
               )}
             </div>
@@ -449,36 +486,37 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
 
               <div>
                 <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                  ¡Lección Superada!
+                  Lesson Mastered! 🎉
                 </span>
                 <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                  ¡Día {lesson.day} Completado!
+                  Day {lesson.day} Completed!
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto mt-1">
-                  Has sumado vocabulario y gramática valiosa a tu meta de 30 días de español.
+                  You've added valuable {currentLang.name} vocabulary and grammar to your 30-day streak.
                 </p>
               </div>
 
-              <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-xs mx-auto shadow-xs flex items-center justify-around">
+              <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-xs mx-auto shadow-2xs flex items-center justify-around">
                 <div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase">Acierto</span>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">Accuracy</span>
                   <p className="text-lg font-black text-[#007AFF]">{quizScorePercent}%</p>
                 </div>
                 <div className="w-px h-8 bg-slate-200 dark:bg-slate-800" />
                 <div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase">Racha</span>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">Streak</span>
                   <p className="text-lg font-black text-amber-500">🔥 {progress.streak}d</p>
                 </div>
               </div>
 
               <button
+                id="back-to-dashboard-btn"
                 onClick={() => {
                   playHapticSound('tap');
                   onClose();
                 }}
-                className="w-full max-w-xs mx-auto py-3.5 rounded-2xl bg-[#007AFF] text-white font-bold text-xs shadow-lg shadow-blue-500/25 hover:bg-blue-600"
+                className="w-full max-w-xs mx-auto py-3.5 rounded-2xl bg-[#007AFF] text-white font-bold text-xs shadow-lg shadow-blue-500/25 hover:bg-blue-600 transition-colors cursor-pointer"
               >
-                Continuar al Dashboard
+                Back to Daily Plan
               </button>
             </div>
           )}

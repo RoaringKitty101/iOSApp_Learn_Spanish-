@@ -4,7 +4,7 @@ export const week1Lessons: DayLesson[] = [
   {
     day: 1,
     week: 1,
-    phaseTitle: 'Semana 1: Supervivencia Esencial',
+    phaseTitle: 'Week 1: Survival & First Steps (A1)',
     titleEs: 'Saludos y Presentaciones',
     titleEn: 'Greetings & Introductions',
     subtitle: 'Master first impressions and fundamental courtesy in Spanish.',
@@ -117,7 +117,7 @@ export const week1Lessons: DayLesson[] = [
   {
     day: 2,
     week: 1,
-    phaseTitle: 'Semana 1: Supervivencia Esencial',
+    phaseTitle: 'Week 1: Survival & First Steps (A1)',
     titleEs: 'Números, Horas y Días',
     titleEn: 'Numbers, Time & Schedules',
     subtitle: 'Master numbers 1-100, tell time, and schedule meetings.',
@@ -214,7 +214,7 @@ export const week1Lessons: DayLesson[] = [
   {
     day: 3,
     week: 1,
-    phaseTitle: 'Semana 1: Supervivencia Esencial',
+    phaseTitle: 'Week 1: Survival & First Steps (A1)',
     titleEs: 'En el Restaurante y Comida',
     titleEn: 'Ordering Food & Tapas',
     subtitle: 'Order like a local, request the bill, and express dietary needs.',
@@ -319,7 +319,7 @@ export const week1Lessons: DayLesson[] = [
   {
     day: 4,
     week: 1,
-    phaseTitle: 'Semana 1: Supervivencia Esencial',
+    phaseTitle: 'Week 1: Survival & First Steps (A1)',
     titleEs: 'Direcciones y Transporte',
     titleEn: 'Getting Around & Transit',
     subtitle: 'Ask for directions, navigate metros, and find your destination.',
@@ -416,7 +416,7 @@ export const week1Lessons: DayLesson[] = [
   {
     day: 5,
     week: 1,
-    phaseTitle: 'Semana 1: Supervivencia Esencial',
+    phaseTitle: 'Week 1: Survival & First Steps (A1)',
     titleEs: 'En el Hotel y Alojamiento',
     titleEn: 'Checking In & Hotel Stays',
     subtitle: 'Check in smoothly, request amenities, and solve room issues.',
@@ -513,7 +513,7 @@ export const week1Lessons: DayLesson[] = [
   {
     day: 6,
     week: 1,
-    phaseTitle: 'Semana 1: Supervivencia Esencial',
+    phaseTitle: 'Week 1: Survival & First Steps (A1)',
     titleEs: 'Compras y Precios',
     titleEn: 'Shopping & Asking Prices',
     subtitle: 'Ask how much items cost, try on clothes, and pay by card.',
@@ -610,7 +610,7 @@ export const week1Lessons: DayLesson[] = [
   {
     day: 7,
     week: 1,
-    phaseTitle: 'Semana 1: Supervivencia Esencial',
+    phaseTitle: 'Week 1: Survival & First Steps (A1)',
     titleEs: 'Repaso y Desafío Semanal 1',
     titleEn: 'Week 1 Milestone & Survival Mastery',
     subtitle: 'Consolidate Week 1! Test your confidence across all survival scenarios.',

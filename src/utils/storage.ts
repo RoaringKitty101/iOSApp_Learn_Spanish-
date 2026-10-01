@@ -1,10 +1,11 @@
-import { UserProgress } from '../types';
+import { UserProgress, SupportedLanguage, CourseData } from '../types';
 
 const STORAGE_KEY = 'aprende_spanish_ios_progress_v1';
 
 const getTodayString = (): string => new Date().toISOString().split('T')[0];
 
 const DEFAULT_PROGRESS: UserProgress = {
+  language: 'es',
   completedDays: [],
   currentDay: 1,
   streak: 0,
@@ -18,6 +19,24 @@ const DEFAULT_PROGRESS: UserProgress = {
   speechRate: 0.9,
   dailyReminderEnabled: true,
   dailyReminderTime: '20:00',
+  courses: {
+    es: {
+      completedDays: [],
+      currentDay: 1,
+      quizScores: {},
+      bookmarkedVocab: ['w1d1_1', 'w1d3_1', 'w4d25_1'],
+      masteredVocab: [],
+      totalMinutesPracticed: 0,
+    },
+    de: {
+      completedDays: [],
+      currentDay: 1,
+      quizScores: {},
+      bookmarkedVocab: ['g_w1d1_1', 'g_w1d3_1', 'g_w1d7_1'],
+      masteredVocab: [],
+      totalMinutesPracticed: 0,
+    },
+  },
 };
 
 /**
@@ -122,3 +141,47 @@ export function resetUserProgress(): UserProgress {
   }
   return DEFAULT_PROGRESS;
 }
+
+export function switchLanguageInProgress(prev: UserProgress, targetLang: SupportedLanguage): UserProgress {
+  if (prev.language === targetLang) return prev;
+
+  const currentCourseSnapshot: CourseData = {
+    completedDays: prev.completedDays,
+    currentDay: prev.currentDay,
+    quizScores: prev.quizScores,
+    bookmarkedVocab: prev.bookmarkedVocab,
+    masteredVocab: prev.masteredVocab,
+    totalMinutesPracticed: prev.totalMinutesPracticed,
+  };
+
+  const updatedCourses = {
+    ...prev.courses,
+    [prev.language]: currentCourseSnapshot,
+  };
+
+  const targetCourseData: CourseData = updatedCourses[targetLang] || {
+    completedDays: [],
+    currentDay: 1,
+    quizScores: {},
+    bookmarkedVocab: targetLang === 'de' ? ['g_w1d1_1', 'g_w1d3_1', 'g_w1d7_1'] : ['w1d1_1', 'w1d3_1', 'w4d25_1'],
+    masteredVocab: [],
+    totalMinutesPracticed: 0,
+  };
+
+  return {
+    ...prev,
+    language: targetLang,
+    dialectPreference: targetLang === 'de' ? 'de-DE' : 'es-ES',
+    completedDays: targetCourseData.completedDays,
+    currentDay: targetCourseData.currentDay,
+    quizScores: targetCourseData.quizScores,
+    bookmarkedVocab: targetCourseData.bookmarkedVocab,
+    masteredVocab: targetCourseData.masteredVocab,
+    totalMinutesPracticed: targetCourseData.totalMinutesPracticed,
+    courses: {
+      ...updatedCourses,
+      [targetLang]: targetCourseData,
+    },
+  };
+}
+

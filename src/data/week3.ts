@@ -4,7 +4,7 @@ export const week3Lessons: DayLesson[] = [
   {
     day: 15,
     week: 3,
-    phaseTitle: 'Semana 3: Acción, Pasado y Comunicación Práctica',
+    phaseTitle: 'Week 3: Action & Narrating the Past (A2/B1)',
     titleEs: 'Pasado Simple: Lo que hice ayer',
     titleEn: 'Preterite Past: What I Did Yesterday',
     subtitle: 'Unlock the power of storytelling. Talk about completed past events.',
@@ -92,7 +92,7 @@ export const week3Lessons: DayLesson[] = [
   {
     day: 16,
     week: 3,
-    phaseTitle: 'Semana 3: Acción, Pasado y Comunicación Práctica',
+    phaseTitle: 'Week 3: Action & Narrating the Past (A2/B1)',
     titleEs: 'Pasado Descriptivo: Cuando era niño',
     titleEn: 'Imperfect Past: Habits & Memories',
     subtitle: 'Describe how things used to be, childhood memories, and ongoing scenes.',
@@ -180,7 +180,7 @@ export const week3Lessons: DayLesson[] = [
   {
     day: 17,
     week: 3,
-    phaseTitle: 'Semana 3: Acción, Pasado y Comunicación Práctica',
+    phaseTitle: 'Week 3: Action & Narrating the Past (A2/B1)',
     titleEs: 'Planes Futuros e Intenciones',
     titleEn: 'Future Plans & Near Future',
     subtitle: 'Talk about tomorrow, next week, dreams, and upcoming trips.',
@@ -268,7 +268,7 @@ export const week3Lessons: DayLesson[] = [
   {
     day: 18,
     week: 3,
-    phaseTitle: 'Semana 3: Acción, Pasado y Comunicación Práctica',
+    phaseTitle: 'Week 3: Action & Narrating the Past (A2/B1)',
     titleEs: 'En el Médico, Farmacia y Salud',
     titleEn: 'Health, Pharmacy & Medical Help',
     subtitle: 'Explain body aches, symptoms, and buy medicine at the pharmacy.',
@@ -356,7 +356,7 @@ export const week3Lessons: DayLesson[] = [
   {
     day: 19,
     week: 3,
-    phaseTitle: 'Semana 3: Acción, Pasado y Comunicación Práctica',
+    phaseTitle: 'Week 3: Action & Narrating the Past (A2/B1)',
     titleEs: 'Opiniones y Sentimientos',
     titleEn: 'Opinions, Feelings & Reactions',
     subtitle: 'Express what you think, agree, disagree, and react to news.',
@@ -444,7 +444,7 @@ export const week3Lessons: DayLesson[] = [
   {
     day: 20,
     week: 3,
-    phaseTitle: 'Semana 3: Acción, Pasado y Comunicación Práctica',
+    phaseTitle: 'Week 3: Action & Narrating the Past (A2/B1)',
     titleEs: 'Cultura, Fiestas y Modismos Hispanos',
     titleEn: 'Culture, Slang & Social Etiquette',
     subtitle: 'Understand tapas culture, two kisses greeting, and regional slang.',
@@ -537,7 +537,7 @@ export const week3Lessons: DayLesson[] = [
   {
     day: 21,
     week: 3,
-    phaseTitle: 'Semana 3: Acción, Pasado y Comunicación Práctica',
+    phaseTitle: 'Week 3: Action & Narrating the Past (A2/B1)',
     titleEs: 'Repaso y Desafío Semanal 3',
     titleEn: 'Week 3 Simulation & B1 Readiness',
     subtitle: 'Three weeks conquered! Test your spontaneous conversational agility.',

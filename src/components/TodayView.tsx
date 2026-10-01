@@ -1,21 +1,33 @@
 import React from 'react';
 import { Play, Volume2, Sparkles, CheckCircle2, ChevronRight, MessageSquareHeart, Layers } from 'lucide-react';
-import { UserProgress, DayLesson, TabType } from '../types';
-import { speakSpanish, playHapticSound } from '../utils/audio';
+import { UserProgress, DayLesson, TabType, SupportedLanguage } from '../types';
+import { speakText, playHapticSound } from '../utils/audio';
+import { getLessonTitle } from '../utils/langHelper';
+import { SUPPORTED_LANGUAGES } from '../data/languages';
+import { LanguageSelector } from './LanguageSelector';
 
 interface TodayViewProps {
   progress: UserProgress;
   todayLesson: DayLesson;
   onOpenLesson: (day: number) => void;
   onNavigateTab: (tab: TabType) => void;
+  onSelectLanguage: (lang: SupportedLanguage) => void;
 }
 
-const DAILY_PROVERBS = [
-  { es: 'Poco a poco se anda lejos.', en: 'Little by little one walks far.' },
-  { es: 'Querer es poder.', en: 'Where there is a will, there is a way.' },
-  { es: 'La práctica hace al maestro.', en: 'Practice makes the master.' },
-  { es: 'El que lee mucho y anda mucho, ve mucho y sabe mucho.', en: 'He who reads much and walks much, sees much and knows much.' },
-  { es: 'Al mal tiempo, buena cara.', en: 'In bad times, put on a brave face.' },
+const SPANISH_PROVERBS = [
+  { target: 'Poco a poco se anda lejos.', en: 'Little by little one travels far.' },
+  { target: 'Querer es poder.', en: 'Where there is a will, there is a way.' },
+  { target: 'La práctica hace al maestro.', en: 'Practice makes perfect.' },
+  { target: 'El que lee mucho y anda mucho, ve mucho y sabe mucho.', en: 'He who reads and travels much, sees and knows much.' },
+  { target: 'Al mal tiempo, buena cara.', en: 'In bad times, keep a brave and hopeful spirit.' },
+];
+
+const GERMAN_PROVERBS = [
+  { target: 'Übung macht den Meister.', en: 'Practice makes perfect (Practice makes the master).' },
+  { target: 'Aller Anfang ist schwer.', en: 'Every beginning is difficult.' },
+  { target: 'Morgenstund hat Gold im Mund.', en: 'The early bird catches the worm.' },
+  { target: 'Wer rastet, der rostet.', en: 'If you rest, you rust.' },
+  { target: 'Ende gut, alles gut.', en: 'All\'s well that ends well.' },
 ];
 
 export const TodayView: React.FC<TodayViewProps> = ({
@@ -23,49 +35,75 @@ export const TodayView: React.FC<TodayViewProps> = ({
   todayLesson,
   onOpenLesson,
   onNavigateTab,
+  onSelectLanguage,
 }) => {
   const percentComplete = Math.round((progress.completedDays.length / 30) * 100);
   const isCompleted = progress.completedDays.includes(todayLesson.day);
-  const proverb = DAILY_PROVERBS[(todayLesson.day - 1) % DAILY_PROVERBS.length];
+  const currentLang = SUPPORTED_LANGUAGES[progress.language] || SUPPORTED_LANGUAGES.es;
+
+  const proverbList = progress.language === 'de' ? GERMAN_PROVERBS : SPANISH_PROVERBS;
+  const proverb = proverbList[(todayLesson.day - 1) % proverbList.length];
 
   const handleSpeak = (text: string, e: React.MouseEvent) => {
     e.stopPropagation();
     playHapticSound('tap');
-    speakSpanish(text, { dialect: progress.dialectPreference, rate: progress.speechRate });
+    speakText(text, {
+      lang: progress.language,
+      dialect: progress.dialectPreference,
+      rate: progress.speechRate,
+    });
   };
+
+  const lessonTitle = getLessonTitle(todayLesson, progress.language);
 
   return (
     <div className="flex-1 overflow-y-auto px-4 pt-3 pb-8 space-y-5">
-      {/* Top Welcome & Streak Banner */}
-      <div className="flex items-center justify-between">
+      {/* Top Welcome & Language Selection Bar */}
+      <div className="flex items-center justify-between gap-2">
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#007AFF]">
-            Acelerador de 30 Días
-          </span>
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#007AFF]">
+              30-Day Accelerator
+            </span>
+            {/* Embedded Language Switcher Pill */}
+            <LanguageSelector
+              progress={progress}
+              onSelectLanguage={onSelectLanguage}
+              variant="pill"
+            />
+          </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Día {todayLesson.day} de 30
+            Day {todayLesson.day} of 30
           </h1>
         </div>
 
         {/* Streak Pill */}
-        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-xs border ${
-          progress.streak > 0
-            ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/15 border-amber-500/30'
-            : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-        }`}>
-          <span className={`text-base ${progress.streak > 0 ? 'animate-pulse' : 'opacity-40 grayscale'}`}>🔥</span>
+        <div
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-2xs border shrink-0 ${
+            progress.streak > 0
+              ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/15 border-amber-500/30'
+              : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+          }`}
+        >
+          <span className={`text-base ${progress.streak > 0 ? 'animate-pulse' : 'opacity-40 grayscale'}`}>
+            🔥
+          </span>
           <div className="flex flex-col">
-            <span className={`text-xs font-bold leading-none ${
-              progress.streak > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500 dark:text-slate-400'
-            }`}>
-              {progress.streak} {progress.streak === 1 ? 'día' : 'días'}
+            <span
+              className={`text-xs font-bold leading-none ${
+                progress.streak > 0
+                  ? 'text-amber-700 dark:text-amber-300'
+                  : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
+              {progress.streak} {progress.streak === 1 ? 'day' : 'days'}
             </span>
             <span className="text-[9px] text-amber-600/80 dark:text-amber-400/80 font-medium">
               {progress.lastCompletedDate === new Date().toISOString().split('T')[0]
-                ? 'Completada hoy'
+                ? 'Completed today'
                 : progress.streak > 0
-                ? '¡Completa hoy!'
-                : 'Inicia tu racha'}
+                ? 'Complete today!'
+                : 'Start your streak'}
             </span>
           </div>
         </div>
@@ -73,6 +111,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
 
       {/* Hero Lesson Card */}
       <div
+        id="today-hero-lesson-card"
         onClick={() => onOpenLesson(todayLesson.day)}
         className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#007AFF] via-[#0062D2] to-[#0047A5] text-white p-6 shadow-xl shadow-blue-500/25 cursor-pointer transform transition-all active:scale-[0.98] group"
       >
@@ -82,18 +121,23 @@ export const TodayView: React.FC<TodayViewProps> = ({
 
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-3">
-            <span className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-md text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+              <span>{currentLang.flag}</span>
               <Sparkles className="w-3 h-3 text-amber-300" />
-              {todayLesson.phaseTitle.split(':')[0]} • {todayLesson.cefr}
+              <span>Week {todayLesson.week} • {todayLesson.cefr}</span>
             </span>
             <span className="text-xs font-medium text-white/80">
-              ⏱️ {todayLesson.durationMinutes} minutos
+              ⏱️ {todayLesson.durationMinutes} mins
             </span>
           </div>
 
-          <h2 className="text-2xl font-black tracking-tight text-white mb-1.5 leading-snug">
-            {todayLesson.titleEs}
+          <h2 className="text-2xl font-black tracking-tight text-white mb-1 leading-snug">
+            {todayLesson.titleEn}
           </h2>
+          <div className="flex items-center gap-1.5 text-sky-200 text-xs font-semibold mb-2.5">
+            <span>{currentLang.flag}</span>
+            <span>{lessonTitle}</span>
+          </div>
           <p className="text-sky-100 text-xs font-medium mb-4 line-clamp-2">
             {todayLesson.subtitle}
           </p>
@@ -102,21 +146,22 @@ export const TodayView: React.FC<TodayViewProps> = ({
             <div className="flex items-center gap-2">
               {isCompleted ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
-                  <CheckCircle2 className="w-4 h-4" /> Completado
+                  <CheckCircle2 className="w-4 h-4" /> Completed
                 </span>
               ) : (
                 <span className="text-xs font-medium text-sky-100">
-                  {todayLesson.vocabulary.length} frases clave + prueba
+                  {todayLesson.vocabulary.length} key phrases + quiz
                 </span>
               )}
             </div>
 
             <button
+              id="start-today-lesson-btn"
               onClick={() => onOpenLesson(todayLesson.day)}
               className="inline-flex items-center gap-2 bg-white text-[#007AFF] font-bold text-xs px-4 py-2 rounded-full shadow-md shadow-black/10 group-hover:bg-sky-50 transition-colors"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
-              <span>{isCompleted ? 'Repasar Lección' : 'Comenzar Hoy'}</span>
+              <span>{isCompleted ? 'Review Lesson' : 'Start Today'}</span>
             </button>
           </div>
         </div>
@@ -126,7 +171,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
       <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-xs">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-            Progreso Global (Meta 30 Días)
+            {currentLang.name} Course Progress (30-Day Goal)
           </span>
           <span className="text-xs font-extrabold text-[#007AFF]">
             {progress.completedDays.length} / 30 ({percentComplete}%)
@@ -148,8 +193,10 @@ export const TodayView: React.FC<TodayViewProps> = ({
             return (
               <button
                 key={milestoneDay}
+                id={`milestone-node-day-${milestoneDay}`}
                 onClick={() => onOpenLesson(milestoneDay)}
-                className="flex flex-col items-center gap-1 group"
+                className="flex flex-col items-center gap-1 group cursor-pointer"
+                title={`Day ${milestoneDay}`}
               >
                 <div
                   className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
@@ -157,13 +204,13 @@ export const TodayView: React.FC<TodayViewProps> = ({
                       ? 'bg-emerald-500 text-white shadow-xs'
                       : isCurrent
                       ? 'ring-2 ring-[#007AFF] bg-blue-50 dark:bg-blue-950/60 text-[#007AFF]'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
                   }`}
                 >
                   {isDone ? '✓' : milestoneDay}
                 </div>
                 <span className="text-[9px] text-slate-500 dark:text-slate-400 font-medium">
-                  {milestoneDay === 30 ? 'B1 🎓' : `Día ${milestoneDay}`}
+                  {milestoneDay === 30 ? 'B1 🎓' : `Day ${milestoneDay}`}
                 </span>
               </button>
             );
@@ -171,23 +218,28 @@ export const TodayView: React.FC<TodayViewProps> = ({
         </div>
       </div>
 
-      {/* Proverbio / Frase Inspiracional del Día */}
+      {/* Quote / Proverb of the Day */}
       <div className="bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/40 rounded-2xl p-4 flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
-            Dicho del Día
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">{currentLang.flag}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+              {currentLang.name} Proverb of the Day
+            </span>
+          </div>
           <p className="text-sm font-bold text-amber-950 dark:text-amber-100 leading-snug">
-            "{proverb.es}"
+            "{proverb.target}"
           </p>
           <p className="text-xs text-amber-800/80 dark:text-amber-300/80 italic">
             {proverb.en}
           </p>
         </div>
         <button
-          onClick={(e) => handleSpeak(proverb.es, e)}
-          className="p-2.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 hover:scale-105 active:scale-95 transition-transform"
-          title="Escuchar pronunciación"
+          id="speak-proverb-btn"
+          onClick={(e) => handleSpeak(proverb.target, e)}
+          className="p-2.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 hover:scale-105 active:scale-95 transition-transform shrink-0"
+          title="Listen to native pronunciation"
+          aria-label="Listen to pronunciation"
         >
           <Volume2 className="w-4 h-4" />
         </button>
@@ -196,34 +248,36 @@ export const TodayView: React.FC<TodayViewProps> = ({
       {/* Quick Navigation Cards */}
       <div className="grid grid-cols-2 gap-3">
         <button
+          id="nav-to-ai-tutor-btn"
           onClick={() => onNavigateTab('tutor')}
-          className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-left hover:border-blue-400/50 transition-colors shadow-xs group"
+          className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-left hover:border-blue-400/50 transition-colors shadow-2xs group"
         >
-          <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-            <MessageSquareHeart className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform text-lg">
+            {currentLang.tutorAvatar}
           </div>
           <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center justify-between">
-            Tutor Sofía AI
+            {currentLang.tutorName}
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
           </h3>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-            Practica conversación real sin presión.
+            Practice conversational {currentLang.name} without pressure.
           </p>
         </button>
 
         <button
+          id="nav-to-flashcards-btn"
           onClick={() => onNavigateTab('flashcards')}
-          className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-left hover:border-blue-400/50 transition-colors shadow-xs group"
+          className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-left hover:border-blue-400/50 transition-colors shadow-2xs group"
         >
           <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
             <Layers className="w-5 h-5" />
           </div>
           <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center justify-between">
-            Tarjetas 3D
+            3D Flashcards
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
           </h3>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-            Repetición espaciada de 140+ frases.
+            Spaced repetition with 150+ {currentLang.name} phrases.
           </p>
         </button>
       </div>

@@ -4,7 +4,7 @@ export const week2Lessons: DayLesson[] = [
   {
     day: 8,
     week: 2,
-    phaseTitle: 'Semana 2: Vida Diaria y Fundamentos',
+    phaseTitle: 'Week 2: Daily Life & Foundations (A1/A2)',
     titleEs: 'La Familia y Descripciones',
     titleEn: 'Family & Describing People',
     subtitle: 'Talk about your family members, physical features, and personalities.',
@@ -92,7 +92,7 @@ export const week2Lessons: DayLesson[] = [
   {
     day: 9,
     week: 2,
-    phaseTitle: 'Semana 2: Vida Diaria y Fundamentos',
+    phaseTitle: 'Week 2: Daily Life & Foundations (A1/A2)',
     titleEs: 'Rutina Diaria y Verbos Reflexivos',
     titleEn: 'Daily Routine & Reflexives',
     subtitle: 'Describe waking up, showering, working, and going to bed.',
@@ -180,7 +180,7 @@ export const week2Lessons: DayLesson[] = [
   {
     day: 10,
     week: 2,
-    phaseTitle: 'Semana 2: Vida Diaria y Fundamentos',
+    phaseTitle: 'Week 2: Daily Life & Foundations (A1/A2)',
     titleEs: 'Clima, Ropa y Estaciones',
     titleEn: 'Weather, Clothing & Seasons',
     subtitle: 'Discuss the weather forecast and what to wear for every season.',
@@ -268,7 +268,7 @@ export const week2Lessons: DayLesson[] = [
   {
     day: 11,
     week: 2,
-    phaseTitle: 'Semana 2: Vida Diaria y Fundamentos',
+    phaseTitle: 'Week 2: Daily Life & Foundations (A1/A2)',
     titleEs: 'Gustos, Pasatiempos e Intereses',
     titleEn: 'Likes, Hobbies & Preferences',
     subtitle: 'Express what you love, like, and dislike using the verb Gustar.',
@@ -356,7 +356,7 @@ export const week2Lessons: DayLesson[] = [
   {
     day: 12,
     week: 2,
-    phaseTitle: 'Semana 2: Vida Diaria y Fundamentos',
+    phaseTitle: 'Week 2: Daily Life & Foundations (A1/A2)',
     titleEs: 'En el Trabajo y Profesiones',
     titleEn: 'Work & Occupations',
     subtitle: 'Discuss careers, what you do for a living, and office tasks.',
@@ -444,7 +444,7 @@ export const week2Lessons: DayLesson[] = [
   {
     day: 13,
     week: 2,
-    phaseTitle: 'Semana 2: Vida Diaria y Fundamentos',
+    phaseTitle: 'Week 2: Daily Life & Foundations (A1/A2)',
     titleEs: 'La Casa y Lugares del Barrio',
     titleEn: 'Home, Rooms & Neighborhood',
     subtitle: 'Describe apartments, furniture, and local neighborhood spots.',
@@ -532,7 +532,7 @@ export const week2Lessons: DayLesson[] = [
   {
     day: 14,
     week: 2,
-    phaseTitle: 'Semana 2: Vida Diaria y Fundamentos',
+    phaseTitle: 'Week 2: Daily Life & Foundations (A1/A2)',
     titleEs: 'Repaso y Desafío Semanal 2',
     titleEn: 'Week 2 Conversational Milestone',
     subtitle: 'Halfway point! Test your daily communication fluency.',

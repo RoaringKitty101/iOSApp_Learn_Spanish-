@@ -4,7 +4,7 @@ export const week4Lessons: DayLesson[] = [
   {
     day: 22,
     week: 4,
-    phaseTitle: 'Semana 4: Fluidez Real y Maestría Conversacional',
+    phaseTitle: 'Week 4: Fluency & Graduation (B1)',
     titleEs: 'Conectores Avanzados y Fluidez',
     titleEn: 'Connectors & Flow of Speech',
     subtitle: 'Stop sounding like a robot. Speak smoothly like an educated native.',
@@ -92,7 +92,7 @@ export const week4Lessons: DayLesson[] = [
   {
     day: 23,
     week: 4,
-    phaseTitle: 'Semana 4: Fluidez Real y Maestría Conversacional',
+    phaseTitle: 'Week 4: Fluency & Graduation (B1)',
     titleEs: 'Emergencias y Pérdidas',
     titleEn: 'Emergencies & Lost Items',
     subtitle: 'Handle lost passports, emergency calls, and police reports calmly.',
@@ -180,7 +180,7 @@ export const week4Lessons: DayLesson[] = [
   {
     day: 24,
     week: 4,
-    phaseTitle: 'Semana 4: Fluidez Real y Maestría Conversacional',
+    phaseTitle: 'Week 4: Fluency & Graduation (B1)',
     titleEs: 'Llamadas y WhatsApp en Español',
     titleEn: 'Phone Calls & Texting Etiquette',
     subtitle: 'Answer calls, leave voicemails, and chat like a native texter.',
@@ -268,7 +268,7 @@ export const week4Lessons: DayLesson[] = [
   {
     day: 25,
     week: 4,
-    phaseTitle: 'Semana 4: Fluidez Real y Maestría Conversacional',
+    phaseTitle: 'Week 4: Fluency & Graduation (B1)',
     titleEs: 'Expresiones Idiomáticas y Dichos',
     titleEn: 'Native Idioms & Colloquial Gems',
     subtitle: 'The colorful phrases native speakers use that aren\'t in standard textbooks.',
@@ -356,7 +356,7 @@ export const week4Lessons: DayLesson[] = [
   {
     day: 26,
     week: 4,
-    phaseTitle: 'Semana 4: Fluidez Real y Maestría Conversacional',
+    phaseTitle: 'Week 4: Fluency & Graduation (B1)',
     titleEs: 'El Subjuntivo Básico: ¡Ojalá! y Buenos Deseos',
     titleEn: 'The Subjunctive: Wishes & Hopes',
     subtitle: 'Demystify the subjunctive mood through every-day friendly wishes.',
@@ -444,7 +444,7 @@ export const week4Lessons: DayLesson[] = [
   {
     day: 27,
     week: 4,
-    phaseTitle: 'Semana 4: Fluidez Real y Maestría Conversacional',
+    phaseTitle: 'Week 4: Fluency & Graduation (B1)',
     titleEs: 'Negociación y Mercados Locales',
     titleEn: 'Markets, Bargaining & Deals',
     subtitle: 'Shop at authentic flea markets, request discounts, and negotiate politely.',
@@ -540,7 +540,7 @@ export const week4Lessons: DayLesson[] = [
   {
     day: 28,
     week: 4,
-    phaseTitle: 'Semana 4: Fluidez Real y Maestría Conversacional',
+    phaseTitle: 'Week 4: Fluency & Graduation (B1)',
     titleEs: 'Variaciones Regionales: España vs. Latinoamérica',
     titleEn: 'Dialects: Spain & Latin America',
     subtitle: 'Appreciate the rich accents, vocabulary differences, and regional charms.',
@@ -627,7 +627,7 @@ export const week4Lessons: DayLesson[] = [
   {
     day: 29,
     week: 4,
-    phaseTitle: 'Semana 4: Fluidez Real y Maestría Conversacional',
+    phaseTitle: 'Week 4: Fluency & Graduation (B1)',
     titleEs: 'Inmersión Total y Narración de Historias',
     titleEn: 'Full Immersion & Storytelling',
     subtitle: 'Tell your journey, personal anecdotes, and plans entirely in Spanish.',
@@ -714,7 +714,7 @@ export const week4Lessons: DayLesson[] = [
   {
     day: 30,
     week: 4,
-    phaseTitle: 'Semana 4: Fluidez Real y Maestría Conversacional',
+    phaseTitle: 'Week 4: Fluency & Graduation (B1)',
     titleEs: 'Graduación B1 y Certificado de Fluidez',
     titleEn: 'Day 30 Graduation & Fluency Certificate',
     subtitle: 'The 30-day milestone! Claim your official B1 Spanish certificate.',

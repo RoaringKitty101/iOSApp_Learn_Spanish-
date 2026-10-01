@@ -15,11 +15,11 @@ export const IOSTabBar: React.FC<IOSTabBarProps> = ({
   uncompletedCardsCount = 0,
 }) => {
   const tabs = [
-    { id: 'today' as TabType, label: 'Hoy', icon: CalendarCheck },
-    { id: 'curriculum' as TabType, label: '30 Días', icon: Map },
-    { id: 'flashcards' as TabType, label: 'Tarjetas', icon: Layers, badge: uncompletedCardsCount > 0 ? uncompletedCardsCount : undefined },
-    { id: 'tutor' as TabType, label: 'Sofía AI', icon: Bot, isAITag: true },
-    { id: 'profile' as TabType, label: 'Progreso', icon: User },
+    { id: 'today' as TabType, label: 'Today', icon: CalendarCheck },
+    { id: 'curriculum' as TabType, label: '30 Days', icon: Map },
+    { id: 'flashcards' as TabType, label: 'Cards', icon: Layers, badge: uncompletedCardsCount > 0 ? uncompletedCardsCount : undefined },
+    { id: 'tutor' as TabType, label: 'AI Tutor', icon: Bot, isAITag: true },
+    { id: 'profile' as TabType, label: 'Stats', icon: User },
   ];
 
   const handleSelect = (tab: TabType) => {
@@ -30,7 +30,7 @@ export const IOSTabBar: React.FC<IOSTabBarProps> = ({
   };
 
   return (
-    <nav aria-label="Navegación principal" className="w-full bg-[#f8f9fc]/90 dark:bg-[#16171d]/90 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 pt-2 pb-5 px-3 z-40 select-none">
+    <nav aria-label="Main Navigation" className="w-full bg-[#f8f9fc]/90 dark:bg-[#16171d]/90 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 pt-2 pb-5 px-3 z-40 select-none">
       <div className="flex items-center justify-around max-w-md mx-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;

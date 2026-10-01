@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Flame, X, ArrowRight, Clock } from 'lucide-react';
+import { Flame, X, ArrowRight, Clock } from 'lucide-react';
 import { UserProgress } from '../types';
 import { playHapticSound } from '../utils/audio';
+import { SUPPORTED_LANGUAGES } from '../data/languages';
 
 interface DailyReminderToastProps {
   progress: UserProgress;
@@ -17,6 +18,7 @@ export const DailyReminderToast: React.FC<DailyReminderToastProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [dismissedToday, setDismissedToday] = useState(false);
 
+  const currentLang = SUPPORTED_LANGUAGES[progress.language] || SUPPORTED_LANGUAGES.es;
   const reminderEnabled = progress.dailyReminderEnabled !== false;
   const reminderTime = progress.dailyReminderTime || '20:00'; // Default 8:00 PM
   const isLessonCompletedToday = progress.completedDays.includes(progress.currentDay);
@@ -82,23 +84,24 @@ export const DailyReminderToast: React.FC<DailyReminderToastProps> = ({
         {/* iOS Push Notification Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-2">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md bg-[#007AFF] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
-              🇪🇸
+            <div className="w-5 h-5 rounded-md bg-[#007AFF] text-white flex items-center justify-center text-[10px] font-bold shadow-2xs">
+              {currentLang.flag}
             </div>
             <span className="text-[11px] font-bold tracking-tight text-slate-300 uppercase">
-              Aprende • Recordatorio ({formatTime12h(reminderTime)})
+              Lingua30 • Reminder ({formatTime12h(reminderTime)})
             </span>
           </div>
 
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
               <Clock className="w-3 h-3 text-amber-400" />
-              <span>Ahora</span>
+              <span>Now</span>
             </span>
             <button
+              id="dismiss-reminder-toast-btn"
               onClick={handleDismiss}
-              className="w-5 h-5 rounded-full hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors ml-1"
-              aria-label="Cerrar aviso"
+              className="w-5 h-5 rounded-full hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors ml-1 cursor-pointer"
+              aria-label="Close notification"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -112,16 +115,16 @@ export const DailyReminderToast: React.FC<DailyReminderToastProps> = ({
           </div>
 
           <div className="flex-1 min-w-0">
-            <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-              <span>¡No olvides tu lección del Día {progress.currentDay}!</span>
+            <h4 className="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
+              <span>Don't miss your Day {progress.currentDay} {currentLang.name} lesson!</span>
               {progress.streak > 0 && (
                 <span className="text-[10px] bg-orange-500/20 text-orange-300 font-semibold px-1.5 py-0.5 rounded-full border border-orange-500/30">
-                  {progress.streak}d racha
+                  🔥 {progress.streak}d streak
                 </span>
               )}
             </h4>
             <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
-              Son más de las {formatTime12h(reminderTime)} y aún no completas tu meta diaria. Dedica 10 minutos para mantener tu racha intacta.
+              It's past {formatTime12h(reminderTime)} and today's lesson isn't completed yet. Take 10 minutes to protect your streak.
             </p>
           </div>
         </div>
@@ -129,16 +132,18 @@ export const DailyReminderToast: React.FC<DailyReminderToastProps> = ({
         {/* Action Buttons */}
         <div className="flex items-center justify-end gap-2 pt-1 border-t border-white/5">
           <button
+            id="reminder-toast-later-btn"
             onClick={handleDismiss}
-            className="px-3 py-1.5 rounded-xl text-slate-300 hover:text-white text-xs font-medium hover:bg-white/5 transition-colors"
+            className="px-3 py-1.5 rounded-xl text-slate-300 hover:text-white text-xs font-medium hover:bg-white/5 transition-colors cursor-pointer"
           >
-            Más tarde
+            Later
           </button>
           <button
+            id="reminder-toast-practice-btn"
             onClick={handleAction}
-            className="px-3.5 py-1.5 rounded-xl bg-[#007AFF] hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+            className="px-3.5 py-1.5 rounded-xl bg-[#007AFF] hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
           >
-            <span>Practicar Día {progress.currentDay}</span>
+            <span>Practice Day {progress.currentDay}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>

@@ -14,9 +14,9 @@ export default defineConfig(() => {
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
         manifest: {
           id: '/',
-          name: 'Aprende: 30-Day Spanish',
-          short_name: 'Aprende',
-          description: 'An iOS-designed 30-day Spanish language accelerator with audio, flashcards, quizzes, and AI conversational tutor.',
+          name: 'Lingua30: 30-Day Language Accelerator',
+          short_name: 'Lingua30',
+          description: 'An iOS-designed 30-day language accelerator for English speakers to master Spanish or German, featuring structured daily curriculums, native audio pronunciation, smart flashcards, interactive quizzes, and an AI conversation partner.',
           theme_color: '#F2F2F7',
           background_color: '#F2F2F7',
           display: 'standalone',
@@ -86,7 +86,7 @@ export default defineConfig(() => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(import.meta.dirname, '.'),
       },
     },
     server: {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Volume2, Sparkles, CheckCircle2, ChevronRight, MessageSquareHeart, Layers } from 'lucide-react';
+import { Play, Volume2, Sparkles, CheckCircle2, ChevronRight, MessageSquareHeart, Layers, Target, HelpCircle } from 'lucide-react';
 import { UserProgress, DayLesson, TabType, SupportedLanguage } from '../types';
 import { speakText, playHapticSound } from '../utils/audio';
 import { getLessonTitle } from '../utils/langHelper';
@@ -12,6 +12,7 @@ interface TodayViewProps {
   onOpenLesson: (day: number) => void;
   onNavigateTab: (tab: TabType) => void;
   onSelectLanguage: (lang: SupportedLanguage) => void;
+  onOpenFeaturesGuide?: () => void;
 }
 
 const SPANISH_PROVERBS = [
@@ -36,6 +37,7 @@ export const TodayView: React.FC<TodayViewProps> = ({
   onOpenLesson,
   onNavigateTab,
   onSelectLanguage,
+  onOpenFeaturesGuide,
 }) => {
   const percentComplete = Math.round((progress.completedDays.length / 30) * 100);
   const isCompleted = progress.completedDays.includes(todayLesson.day);
@@ -77,34 +79,52 @@ export const TodayView: React.FC<TodayViewProps> = ({
           </h1>
         </div>
 
-        {/* Streak Pill */}
-        <div
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-2xs border shrink-0 ${
-            progress.streak > 0
-              ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/15 border-amber-500/30'
-              : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-          }`}
-        >
-          <span className={`text-base ${progress.streak > 0 ? 'animate-pulse' : 'opacity-40 grayscale'}`}>
-            🔥
-          </span>
-          <div className="flex flex-col">
-            <span
-              className={`text-xs font-bold leading-none ${
-                progress.streak > 0
-                  ? 'text-amber-700 dark:text-amber-300'
-                  : 'text-slate-500 dark:text-slate-400'
-              }`}
+        {/* Right Actions: Features Guide Info Button + Streak Pill */}
+        <div className="flex items-center gap-2 shrink-0">
+          {onOpenFeaturesGuide && (
+            <button
+              id="today-open-features-guide-btn"
+              onClick={() => {
+                playHapticSound('tap');
+                onOpenFeaturesGuide();
+              }}
+              className="w-10 h-10 rounded-full bg-white dark:bg-[#1c1c1e] border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-[#007AFF] hover:border-[#007AFF]/40 flex items-center justify-center shadow-2xs transition-colors cursor-pointer active:scale-95"
+              title="App Features & Guide"
+              aria-label="Open App Features and Guide"
             >
-              {progress.streak} {progress.streak === 1 ? 'day' : 'days'}
+              <HelpCircle className="w-4.5 h-4.5" />
+            </button>
+          )}
+
+          {/* Streak Pill */}
+          <div
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-2xs border shrink-0 ${
+              progress.streak > 0
+                ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/15 border-amber-500/30'
+                : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+            }`}
+          >
+            <span className={`text-base ${progress.streak > 0 ? 'animate-pulse' : 'opacity-40 grayscale'}`}>
+              🔥
             </span>
-            <span className="text-[9px] text-amber-600/80 dark:text-amber-400/80 font-medium">
-              {progress.lastCompletedDate === new Date().toISOString().split('T')[0]
-                ? 'Completed today'
-                : progress.streak > 0
-                ? 'Complete today!'
-                : 'Start your streak'}
-            </span>
+            <div className="flex flex-col">
+              <span
+                className={`text-xs font-bold leading-none ${
+                  progress.streak > 0
+                    ? 'text-amber-700 dark:text-amber-300'
+                    : 'text-slate-500 dark:text-slate-400'
+                }`}
+              >
+                {progress.streak} {progress.streak === 1 ? 'day' : 'days'}
+              </span>
+              <span className="text-[9px] text-amber-600/80 dark:text-amber-400/80 font-medium">
+                {progress.lastCompletedDate === new Date().toISOString().split('T')[0]
+                  ? 'Completed today'
+                  : progress.streak > 0
+                  ? 'Complete today!'
+                  : 'Start your streak'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -216,6 +236,50 @@ export const TodayView: React.FC<TodayViewProps> = ({
             );
           })}
         </div>
+
+        {/* Daily Study Goal Quick Indicator */}
+        {(() => {
+          const todayStr = new Date().toISOString().split('T')[0];
+          const todayMinutes = progress.dailyMinutesDate === todayStr ? (progress.dailyMinutesToday || 0) : 0;
+          const dailyGoal = progress.dailyStudyGoalMinutes || 10;
+          const isGoalMet = todayMinutes >= dailyGoal;
+
+          return (
+            <div
+              id="today-daily-goal-indicator"
+              onClick={() => onNavigateTab('profile')}
+              className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs cursor-pointer group"
+            >
+              <div className="flex items-center gap-2">
+                <div className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] ${
+                  isGoalMet
+                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400'
+                    : 'bg-blue-50 dark:bg-blue-950/60 text-[#007AFF]'
+                }`}>
+                  <Target className="w-3.5 h-3.5" />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300 text-[11px]">
+                    Daily Goal:
+                  </span>
+                  <span className="font-bold text-[#007AFF] text-[11px]">
+                    {todayMinutes} / {dailyGoal} min
+                  </span>
+                  {isGoalMet && (
+                    <span className="text-[9px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold px-1.5 py-0.2 rounded-full flex items-center gap-0.5">
+                      <CheckCircle2 className="w-2.5 h-2.5" /> Met
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <span className="text-[10px] text-slate-400 group-hover:text-[#007AFF] font-medium flex items-center gap-0.5 transition-colors">
+                <span>Manage Goal</span>
+                <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+              </span>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Quote / Proverb of the Day */}

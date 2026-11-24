@@ -15,6 +15,10 @@ const DEFAULT_PROGRESS: UserProgress = {
   bookmarkedVocab: ['w1d1_1', 'w1d3_1', 'w4d25_1'],
   quizScores: {},
   totalMinutesPracticed: 0,
+  dailyStudyGoalMinutes: 10,
+  dailyMinutesToday: 0,
+  dailyMinutesDate: getTodayString(),
+  dailyMinutesHistory: {},
   dialectPreference: 'es-ES',
   speechRate: 0.9,
   dailyReminderEnabled: true,
@@ -114,11 +118,19 @@ export function loadUserProgress(): UserProgress {
     const today = getTodayString();
     const effectiveStreak = verifyAndCleanStreak(parsed.streak || 0, parsed.lastCompletedDate);
 
+    // If day changed, reset today's minutes while preserving history
+    const isSameDay = parsed.dailyMinutesDate === today;
+    const dailyMinutesToday = isSameDay ? (parsed.dailyMinutesToday ?? (parsed.lastCompletedDate === today ? 10 : 0)) : 0;
+
     return {
       ...DEFAULT_PROGRESS,
       ...parsed,
       streak: effectiveStreak,
       lastActiveDate: today,
+      dailyMinutesDate: today,
+      dailyMinutesToday,
+      dailyStudyGoalMinutes: parsed.dailyStudyGoalMinutes || 10,
+      dailyMinutesHistory: parsed.dailyMinutesHistory || {},
     };
   } catch (e) {
     console.error('Error loading progress:', e);
@@ -184,4 +196,47 @@ export function switchLanguageInProgress(prev: UserProgress, targetLang: Support
     },
   };
 }
+
+export function getTodayStudyMinutes(progress: UserProgress): number {
+  const today = getTodayString();
+  if (progress.dailyMinutesDate === today) {
+    return progress.dailyMinutesToday || 0;
+  }
+  return 0;
+}
+
+export function addStudyMinutes(progress: UserProgress, minutesToAdd: number): UserProgress {
+  const today = getTodayString();
+  const currentTodayMinutes = progress.dailyMinutesDate === today ? (progress.dailyMinutesToday || 0) : 0;
+  const newTodayMinutes = currentTodayMinutes + minutesToAdd;
+  const newHistory = {
+    ...(progress.dailyMinutesHistory || {}),
+    [today]: newTodayMinutes,
+  };
+
+  const currentCourse = progress.courses?.[progress.language] || {
+    completedDays: progress.completedDays,
+    currentDay: progress.currentDay,
+    quizScores: progress.quizScores,
+    bookmarkedVocab: progress.bookmarkedVocab,
+    masteredVocab: progress.masteredVocab,
+    totalMinutesPracticed: progress.totalMinutesPracticed,
+  };
+
+  return {
+    ...progress,
+    totalMinutesPracticed: (progress.totalMinutesPracticed || 0) + minutesToAdd,
+    dailyMinutesDate: today,
+    dailyMinutesToday: newTodayMinutes,
+    dailyMinutesHistory: newHistory,
+    courses: {
+      ...progress.courses,
+      [progress.language]: {
+        ...currentCourse,
+        totalMinutesPracticed: (currentCourse.totalMinutesPracticed || 0) + minutesToAdd,
+      },
+    },
+  };
+}
+
 

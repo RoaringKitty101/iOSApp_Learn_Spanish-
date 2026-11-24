@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Award, Flame, BookCheck, Volume2, Star, Settings, RotateCcw, Download, CheckCircle, Sparkles, Bell, Clock, Globe } from 'lucide-react';
+import { Award, Flame, BookCheck, Volume2, Star, Settings, RotateCcw, Download, CheckCircle, CheckCircle2, Sparkles, Bell, Clock, Globe, Target, Plus, HelpCircle, ChevronRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { UserProgress, SupportedLanguage } from '../types';
 import { getAllCurriculumVocabulary } from '../data/curriculum';
@@ -15,6 +15,9 @@ interface ProfileViewProps {
   onResetProgress: () => void;
   onSelectLanguage: (lang: SupportedLanguage) => void;
   onTriggerTestReminder?: () => void;
+  onAddStudyMinutes?: (minutes: number) => void;
+  onNavigateTab?: (tab: any) => void;
+  onOpenFeaturesGuide?: () => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -23,6 +26,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onResetProgress,
   onSelectLanguage,
   onTriggerTestReminder,
+  onAddStudyMinutes,
+  onNavigateTab,
+  onOpenFeaturesGuide,
 }) => {
   const currentLang = SUPPORTED_LANGUAGES[progress.language] || SUPPORTED_LANGUAGES.es;
   const isGerman = progress.language === 'de';
@@ -60,6 +66,61 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       origin: { y: 0.5 },
     });
     setShowCertificate(true);
+  };
+
+  // Daily Study Goal and Progress Tracker
+  const dailyGoal = progress.dailyStudyGoalMinutes || 10;
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayMinutes = progress.dailyMinutesDate === todayStr ? (progress.dailyMinutesToday || 0) : 0;
+  const goalPercent = Math.min(100, Math.round((todayMinutes / dailyGoal) * 100));
+  const isGoalReached = todayMinutes >= dailyGoal;
+
+  const handleSetDailyGoal = (mins: number) => {
+    playHapticSound('tap');
+    onUpdateProgress({ dailyStudyGoalMinutes: mins });
+  };
+
+  const handleLogFiveMinutes = () => {
+    const nextMinutes = todayMinutes + 5;
+    const willReach = nextMinutes >= dailyGoal && todayMinutes < dailyGoal;
+
+    if (onAddStudyMinutes) {
+      onAddStudyMinutes(5);
+    } else {
+      const newHistory = {
+        ...(progress.dailyMinutesHistory || {}),
+        [todayStr]: nextMinutes,
+      };
+      onUpdateProgress({
+        dailyMinutesDate: todayStr,
+        dailyMinutesToday: nextMinutes,
+        dailyMinutesHistory: newHistory,
+        totalMinutesPracticed: (progress.totalMinutesPracticed || 0) + 5,
+      });
+      playHapticSound('tap');
+    }
+
+    if (willReach) {
+      playHapticSound('complete');
+      confetti({
+        particleCount: 90,
+        spread: 75,
+        origin: { y: 0.55 },
+      });
+    }
+  };
+
+  const handleResetTodayMinutes = () => {
+    playHapticSound('tap');
+    const newHistory = {
+      ...(progress.dailyMinutesHistory || {}),
+      [todayStr]: 0,
+    };
+    onUpdateProgress({
+      dailyMinutesDate: todayStr,
+      dailyMinutesToday: 0,
+      dailyMinutesHistory: newHistory,
+    });
   };
 
   return (
@@ -150,6 +211,162 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
       </div>
 
+      {/* Daily Study Goal & Today's Progress Tracker */}
+      <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-2xs transition-colors ${
+              isGoalReached
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                : 'bg-blue-500/15 text-[#007AFF]'
+            }`}>
+              <Target className="w-4 h-4 stroke-[2.5]" />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Daily Study Goal
+              </h3>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                Target minutes & daily progress consistency
+              </p>
+            </div>
+          </div>
+
+          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ${
+            isGoalReached
+              ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+              : 'bg-blue-50 dark:bg-blue-950/60 text-[#007AFF] border-blue-200 dark:border-blue-800'
+          }`}>
+            {todayMinutes} / {dailyGoal} min
+          </span>
+        </div>
+
+        {/* Goal Preset Selector Chips */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+            <span>Choose Daily Target:</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+              {dailyGoal === 5 && '⚡ Casual (5 min)'}
+              {dailyGoal === 10 && '🎯 Standard (10 min • Recommended)'}
+              {dailyGoal === 15 && '🚀 Focused (15 min)'}
+              {dailyGoal === 20 && '🔥 Intensive (20 min)'}
+              {![5, 10, 15, 20].includes(dailyGoal) && `Custom (${dailyGoal} min)`}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-4 gap-1.5">
+            {[
+              { mins: 5, label: '5 min', tier: 'Casual' },
+              { mins: 10, label: '10 min', tier: 'Standard' },
+              { mins: 15, label: '15 min', tier: 'Focused' },
+              { mins: 20, label: '20 min', tier: 'Intensive' },
+            ].map((preset) => {
+              const isSelected = dailyGoal === preset.mins;
+              return (
+                <button
+                  key={preset.mins}
+                  id={`goal-preset-${preset.mins}-btn`}
+                  onClick={() => handleSetDailyGoal(preset.mins)}
+                  className={`py-2 px-1 rounded-xl border text-center transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-blue-50 dark:bg-blue-950/60 border-[#007AFF] text-[#007AFF] shadow-2xs font-bold ring-1 ring-[#007AFF]/30'
+                      : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300'
+                  }`}
+                >
+                  <span className="block text-xs leading-none font-bold">{preset.label}</span>
+                  <span className="block text-[9px] mt-0.5 opacity-70 font-medium">{preset.tier}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Progress Tracker Card & Animated Bar */}
+        <div className="p-3.5 bg-slate-50/80 dark:bg-slate-800/40 rounded-2xl border border-slate-200/70 dark:border-slate-700/60 space-y-2.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <span>Today's Progress</span>
+              {isGoalReached && (
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded-full flex items-center gap-0.5">
+                  <CheckCircle2 className="w-3 h-3 stroke-[2.5]" /> Goal Met
+                </span>
+              )}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-extrabold text-sm text-[#007AFF] font-mono">
+                {todayMinutes}m
+              </span>
+              <span className="text-slate-400">/</span>
+              <span className="font-semibold text-slate-500 font-mono">
+                {dailyGoal}m
+              </span>
+              <span className="text-[11px] font-bold text-slate-400 ml-1">
+                ({goalPercent}%)
+              </span>
+            </div>
+          </div>
+
+          {/* Progress Track with animated glowing fill */}
+          <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden relative shadow-inner">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ease-out ${
+                isGoalReached
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-400 shadow-sm shadow-emerald-500/50'
+                  : 'bg-gradient-to-r from-blue-500 to-indigo-600'
+              }`}
+              style={{ width: `${Math.min(100, Math.max(goalPercent, todayMinutes > 0 ? 5 : 0))}%` }}
+            />
+          </div>
+
+          {/* Motivation / Status Feedback */}
+          <div className="flex items-center justify-between pt-0.5">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+              {isGoalReached
+                ? `🎉 Fantastic effort! You've reached your ${dailyGoal}-minute daily study goal today.`
+                : `${Math.max(0, dailyGoal - todayMinutes)} minutes remaining today to hit your goal.`}
+            </p>
+          </div>
+
+          {/* Quick Action Buttons */}
+          <div className="flex items-center gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
+            <button
+              id="log-study-minutes-btn"
+              onClick={handleLogFiveMinutes}
+              className="flex-1 py-1.5 px-2.5 rounded-xl bg-white dark:bg-[#1c1c1e] hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer active:scale-95"
+            >
+              <Plus className="w-3.5 h-3.5 text-[#007AFF]" />
+              <span>Log +5m Study</span>
+            </button>
+
+            {onNavigateTab && (
+              <button
+                id="jump-to-study-lesson-btn"
+                onClick={() => {
+                  playHapticSound('tap');
+                  onNavigateTab('today');
+                }}
+                className="py-1.5 px-3.5 rounded-xl bg-[#007AFF] hover:bg-blue-600 text-white text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-2xs cursor-pointer active:scale-95"
+              >
+                <span>Study Now</span>
+              </button>
+            )}
+
+            {todayMinutes > 0 && (
+              <button
+                id="reset-today-minutes-btn"
+                onClick={handleResetTodayMinutes}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                title="Reset today's study minutes (for testing)"
+                aria-label="Reset today's minutes"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Mastery Stats Bento */}
       <div className="grid grid-cols-3 gap-2.5">
         <div className="bg-white dark:bg-[#1c1c1e] p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-center shadow-2xs">
@@ -213,6 +430,39 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <span>View</span>
         </button>
       </div>
+
+      {/* App Features & Guide Card */}
+      {onOpenFeaturesGuide && (
+        <button
+          id="profile-open-features-guide-btn"
+          onClick={() => {
+            playHapticSound('tap');
+            onOpenFeaturesGuide();
+          }}
+          className="w-full text-left bg-white dark:bg-[#1c1c1e] hover:border-[#007AFF]/50 p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center justify-between gap-3 transition-colors cursor-pointer group active:scale-[0.99]"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-blue-500/12 text-[#007AFF] flex items-center justify-center shrink-0">
+              <HelpCircle className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                App Guide · 8 Core Features
+              </p>
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">
+                App Features & How It Works
+              </h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                30-day plan, 3D cards, AI tutor, goals & offline PWA
+              </p>
+            </div>
+          </div>
+          <span className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-[#007AFF] whitespace-nowrap">
+            <span>Explore</span>
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          </span>
+        </button>
+      )}
 
       {/* Settings: Dialect & Speed */}
       <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-4">

@@ -115,6 +115,10 @@ export interface UserProgress {
   bookmarkedVocab: string[];
   quizScores: Record<number, number>; // day -> score percent
   totalMinutesPracticed: number;
+  dailyStudyGoalMinutes?: number; // e.g. 5, 10, 15, 20 (default 10)
+  dailyMinutesToday?: number; // minutes studied today
+  dailyMinutesDate?: string; // YYYY-MM-DD
+  dailyMinutesHistory?: Record<string, number>; // date -> minutes
   dialectPreference: string;
   speechRate: number; // 0.8 to 1.2
   dailyReminderEnabled?: boolean;

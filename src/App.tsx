@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone, Monitor, Flame } from 'lucide-react';
 import { TabType, UserProgress, DayLesson } from './types';
-import { loadUserProgress, saveUserProgress, resetUserProgress, calculateStreakOnLessonCompletion, switchLanguageInProgress } from './utils/storage';
+import { loadUserProgress, saveUserProgress, resetUserProgress, calculateStreakOnLessonCompletion, switchLanguageInProgress, addStudyMinutes } from './utils/storage';
 import { getLessonByDay } from './data/curriculum';
 import { SupportedLanguage } from './data/languages';
 import { IOSStatusBar } from './components/IOSStatusBar';
@@ -15,6 +15,7 @@ import { LessonDetailModal } from './components/LessonDetailModal';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { DailyReminderToast } from './components/DailyReminderToast';
+import { AppFeaturesModal } from './components/AppFeaturesModal';
 import { playHapticSound } from './utils/audio';
 
 export function App() {
@@ -22,6 +23,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState<TabType>('today');
   const [activeLessonDay, setActiveLessonDay] = useState<number | null>(null);
   const [testReminderTimestamp, setTestReminderTimestamp] = useState<number | undefined>(undefined);
+  const [showFeaturesGuide, setShowFeaturesGuide] = useState<boolean>(false);
 
   // Default to phone frame on desktop, but full edge-to-edge on mobile/iPhone
   const [isPhoneFrame, setIsPhoneFrame] = useState<boolean>(() => {
@@ -66,6 +68,7 @@ export function App() {
         quizScores: prev.quizScores,
         bookmarkedVocab: prev.bookmarkedVocab,
         masteredVocab: prev.masteredVocab,
+        totalMinutesPracticed: prev.totalMinutesPracticed,
       };
 
       const alreadyCompleted = currentCourse.completedDays.includes(dayNumber);
@@ -81,6 +84,14 @@ export function App() {
       // Calculate streak
       const streakCalc = calculateStreakOnLessonCompletion(prev.streak, prev.lastCompletedDate);
 
+      const today = new Date().toISOString().split('T')[0];
+      const currentTodayMins = prev.dailyMinutesDate === today ? (prev.dailyMinutesToday || 0) : 0;
+      const newTodayMins = currentTodayMins + 10;
+      const newHistory = {
+        ...(prev.dailyMinutesHistory || {}),
+        [today]: newTodayMins,
+      };
+
       const updatedCourse = {
         ...currentCourse,
         completedDays: newCompleted,
@@ -89,6 +100,7 @@ export function App() {
           ...currentCourse.quizScores,
           [dayNumber]: Math.max(currentCourse.quizScores[dayNumber] || 0, scorePercent),
         },
+        totalMinutesPracticed: (currentCourse.totalMinutesPracticed || 0) + 10,
       };
 
       return {
@@ -99,12 +111,20 @@ export function App() {
         lastCompletedDate: streakCalc.lastCompletedDate,
         quizScores: updatedCourse.quizScores,
         totalMinutesPracticed: prev.totalMinutesPracticed + 10,
+        dailyMinutesDate: today,
+        dailyMinutesToday: newTodayMins,
+        dailyMinutesHistory: newHistory,
         courses: {
           ...prev.courses,
           [prev.language]: updatedCourse,
         },
       };
     });
+  };
+
+  const handleAddStudyMinutes = (minutesToAdd: number) => {
+    playHapticSound('success');
+    setProgress((prev) => addStudyMinutes(prev, minutesToAdd));
   };
 
   const handleToggleBookmark = (vocabId: string) => {
@@ -121,6 +141,7 @@ export function App() {
         quizScores: prev.quizScores,
         bookmarkedVocab: prev.bookmarkedVocab,
         masteredVocab: prev.masteredVocab,
+        totalMinutesPracticed: prev.totalMinutesPracticed,
       };
 
       return {
@@ -148,6 +169,7 @@ export function App() {
         quizScores: prev.quizScores,
         bookmarkedVocab: prev.bookmarkedVocab,
         masteredVocab: prev.masteredVocab,
+        totalMinutesPracticed: prev.totalMinutesPracticed,
       };
 
       return {
@@ -243,6 +265,7 @@ export function App() {
               onOpenLesson={handleOpenLesson}
               onNavigateTab={setActiveTab}
               onSelectLanguage={handleSelectLanguage}
+              onOpenFeaturesGuide={() => setShowFeaturesGuide(true)}
             />
           )}
 
@@ -277,6 +300,9 @@ export function App() {
               onResetProgress={handleResetProgress}
               onTriggerTestReminder={() => setTestReminderTimestamp(Date.now())}
               onSelectLanguage={handleSelectLanguage}
+              onAddStudyMinutes={handleAddStudyMinutes}
+              onNavigateTab={setActiveTab}
+              onOpenFeaturesGuide={() => setShowFeaturesGuide(true)}
             />
           )}
         </main>
@@ -296,6 +322,16 @@ export function App() {
             onClose={() => setActiveLessonDay(null)}
             onCompleteLesson={handleCompleteLesson}
             onToggleBookmark={handleToggleBookmark}
+          />
+        )}
+
+        {/* App Features & Guide Modal */}
+        {showFeaturesGuide && (
+          <AppFeaturesModal
+            progress={progress}
+            onClose={() => setShowFeaturesGuide(false)}
+            onNavigateTab={setActiveTab}
+            onOpenLesson={handleOpenLesson}
           />
         )}
       </div>

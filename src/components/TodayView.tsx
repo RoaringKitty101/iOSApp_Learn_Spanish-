@@ -59,73 +59,74 @@ export const TodayView: React.FC<TodayViewProps> = ({
   const lessonTitle = getLessonTitle(todayLesson, progress.language);
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 pt-3 pb-8 space-y-5">
+    <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-4 pt-3 pb-8 space-y-5">
       {/* Top Welcome & Language Selection Bar */}
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#007AFF]">
-              30-Day Accelerator
-            </span>
-            {/* Embedded Language Switcher Pill */}
-            <LanguageSelector
-              progress={progress}
-              onSelectLanguage={onSelectLanguage}
-              variant="pill"
-            />
-          </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Day {todayLesson.day} of 30
-          </h1>
-        </div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          {/* Embedded Language Switcher Pill */}
+          <LanguageSelector
+            progress={progress}
+            onSelectLanguage={onSelectLanguage}
+            variant="pill"
+          />
 
-        {/* Right Actions: Features Guide Info Button + Streak Pill */}
-        <div className="flex items-center gap-2 shrink-0">
-          {onOpenFeaturesGuide && (
-            <button
-              id="today-open-features-guide-btn"
-              onClick={() => {
-                playHapticSound('tap');
-                onOpenFeaturesGuide();
-              }}
-              className="w-10 h-10 rounded-full bg-white dark:bg-[#1c1c1e] border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-[#007AFF] hover:border-[#007AFF]/40 flex items-center justify-center shadow-2xs transition-colors cursor-pointer active:scale-95"
-              title="App Features & Guide"
-              aria-label="Open App Features and Guide"
-            >
-              <HelpCircle className="w-4.5 h-4.5" />
-            </button>
-          )}
-
-          {/* Streak Pill */}
-          <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-2xs border shrink-0 ${
-              progress.streak > 0
-                ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/15 border-amber-500/30'
-                : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-            }`}
-          >
-            <span className={`text-base ${progress.streak > 0 ? 'animate-pulse' : 'opacity-40 grayscale'}`}>
-              🔥
-            </span>
-            <div className="flex flex-col">
-              <span
-                className={`text-xs font-bold leading-none ${
-                  progress.streak > 0
-                    ? 'text-amber-700 dark:text-amber-300'
-                    : 'text-slate-500 dark:text-slate-400'
-                }`}
+          {/* Right Actions: Features Guide Info Button + Streak Pill */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {onOpenFeaturesGuide && (
+              <button
+                id="today-open-features-guide-btn"
+                onClick={() => {
+                  playHapticSound('tap');
+                  onOpenFeaturesGuide();
+                }}
+                className="w-9 h-9 rounded-full bg-white dark:bg-[#1c1c1e] border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-[#007AFF] hover:border-[#007AFF]/40 flex items-center justify-center shadow-2xs transition-colors cursor-pointer active:scale-95 shrink-0"
+                title="App Features & Guide"
+                aria-label="Open App Features and Guide"
               >
-                {progress.streak} {progress.streak === 1 ? 'day' : 'days'}
+                <HelpCircle className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Streak Pill */}
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full shadow-2xs border shrink-0 ${
+                progress.streak > 0
+                  ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/15 border-amber-500/30'
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+              }`}
+            >
+              <span className={`text-sm leading-none ${progress.streak > 0 ? 'animate-pulse' : 'opacity-40 grayscale'}`}>
+                🔥
               </span>
-              <span className="text-[9px] text-amber-600/80 dark:text-amber-400/80 font-medium">
-                {progress.lastCompletedDate === new Date().toISOString().split('T')[0]
-                  ? 'Completed today'
-                  : progress.streak > 0
-                  ? 'Complete today!'
-                  : 'Start your streak'}
-              </span>
+              <div className="flex flex-col">
+                <span
+                  className={`text-[11px] font-bold leading-none ${
+                    progress.streak > 0
+                      ? 'text-amber-700 dark:text-amber-300'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  {progress.streak} {progress.streak === 1 ? 'day' : 'days'}
+                </span>
+                <span className="text-[9px] text-amber-600/80 dark:text-amber-400/80 font-medium leading-tight">
+                  {progress.lastCompletedDate === new Date().toISOString().split('T')[0]
+                    ? 'Done today'
+                    : progress.streak > 0
+                    ? 'Keep it going!'
+                    : 'Start streak'}
+                </span>
+              </div>
             </div>
           </div>
+        </div>
+
+        <div>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#007AFF] block">
+            30-Day Accelerator
+          </span>
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+            Day {todayLesson.day} of 30
+          </h1>
         </div>
       </div>
 

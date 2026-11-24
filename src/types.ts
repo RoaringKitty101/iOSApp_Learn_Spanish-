@@ -123,6 +123,7 @@ export interface UserProgress {
   speechRate: number; // 0.8 to 1.2
   dailyReminderEnabled?: boolean;
   dailyReminderTime?: string; // 'HH:MM' (default '20:00' for 8 PM)
+  theme?: 'light' | 'dark';
   courses?: Partial<Record<SupportedLanguage, CourseData>>;
 }
 

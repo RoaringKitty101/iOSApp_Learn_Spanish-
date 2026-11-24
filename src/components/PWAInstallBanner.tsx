@@ -29,15 +29,15 @@ export const PWAInstallBanner: React.FC = () => {
   return (
     <>
       {/* Top Banner inside App Header or Container */}
-      <div className="mx-4 mt-2 mb-1 p-2.5 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-blue-500/5 border border-[#007AFF]/30 flex items-center justify-between gap-2 shadow-2xs select-none">
-        <div className="flex items-center gap-2 overflow-hidden">
+      <div className="mx-3 sm:mx-4 mt-2 mb-1 p-2.5 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-blue-500/5 border border-[#007AFF]/30 flex items-center justify-between gap-2 shadow-2xs select-none shrink-0 min-w-0 overflow-hidden">
+        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
           <div className="w-8 h-8 rounded-xl bg-[#007AFF] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
             📱
           </div>
-          <div className="truncate">
-            <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight flex items-center gap-1">
-              Install on iPhone or Tablet
-              <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold px-1.5 py-0.2 rounded-full">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight flex items-center gap-1 min-w-0">
+              <span className="truncate">Install on iPhone or Tablet</span>
+              <span className="text-[10px] shrink-0 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold px-1.5 py-0.2 rounded-full">
                 Free PWA
               </span>
             </p>

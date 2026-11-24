@@ -43,9 +43,9 @@ export const IOSStatusBar: React.FC<IOSStatusBarProps> = ({
 
   return (
     <>
-      <div className="relative z-40 pt-2 pb-1 px-4 sm:px-6 flex items-center justify-between select-none text-slate-800 dark:text-slate-100 font-semibold text-xs tracking-tight">
+      <div className="relative z-40 shrink-0 pt-[max(0.5rem,env(safe-area-inset-top))] pb-1 px-4 sm:px-6 flex items-center justify-between gap-2 select-none text-slate-800 dark:text-slate-100 font-semibold text-xs tracking-tight overflow-hidden">
         {/* Left: Time + Small Fire Icon Streak Counter */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="font-bold text-[13px] tracking-tight">{time}</span>
 
           {/* Small Fire Icon Counter in Header */}
@@ -74,8 +74,8 @@ export const IOSStatusBar: React.FC<IOSStatusBarProps> = ({
         <div
           id="dynamic-island-container"
           onClick={() => setIslandExpanded(!islandExpanded)}
-          className={`bg-black text-white rounded-full transition-all duration-300 ease-out flex items-center justify-between cursor-pointer px-3 ${
-            islandExpanded || activeAudioText ? 'h-7 w-48 shadow-lg shadow-black/20' : 'h-6 w-24'
+          className={`bg-black text-white rounded-full transition-all duration-300 ease-out flex items-center justify-between cursor-pointer px-2.5 min-w-0 ${
+            islandExpanded || activeAudioText ? 'h-7 w-40 sm:w-48 shadow-lg shadow-black/20' : 'h-6 w-20 sm:w-24'
           }`}
         >
           {activeAudioText ? (

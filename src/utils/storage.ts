@@ -23,6 +23,7 @@ const DEFAULT_PROGRESS: UserProgress = {
   speechRate: 0.9,
   dailyReminderEnabled: true,
   dailyReminderTime: '20:00',
+  theme: 'light',
   courses: {
     es: {
       completedDays: [],
@@ -131,6 +132,7 @@ export function loadUserProgress(): UserProgress {
       dailyMinutesToday,
       dailyStudyGoalMinutes: parsed.dailyStudyGoalMinutes || 10,
       dailyMinutesHistory: parsed.dailyMinutesHistory || {},
+      theme: parsed.theme === 'dark' ? 'dark' : 'light',
     };
   } catch (e) {
     console.error('Error loading progress:', e);

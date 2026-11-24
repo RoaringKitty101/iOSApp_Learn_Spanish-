@@ -30,8 +30,8 @@ export const IOSTabBar: React.FC<IOSTabBarProps> = ({
   };
 
   return (
-    <nav aria-label="Main Navigation" className="w-full bg-[#f8f9fc]/90 dark:bg-[#16171d]/90 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 pt-2 pb-5 px-3 z-40 select-none">
-      <div className="flex items-center justify-around max-w-md mx-auto">
+    <nav aria-label="Main Navigation" className="w-full shrink-0 bg-[#f8f9fc]/90 dark:bg-[#16171d]/90 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] px-2 z-40 select-none">
+      <div className="grid grid-cols-5 items-center max-w-md mx-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -40,7 +40,7 @@ export const IOSTabBar: React.FC<IOSTabBarProps> = ({
             <button
               key={tab.id}
               onClick={() => handleSelect(tab.id)}
-              className={`relative flex flex-col items-center justify-center py-1 px-3 transition-colors duration-200 group ${
+              className={`relative flex flex-col items-center justify-center py-1 px-1 transition-colors duration-200 group min-w-0 ${
                 isActive ? 'text-[#007AFF]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
@@ -59,7 +59,7 @@ export const IOSTabBar: React.FC<IOSTabBarProps> = ({
                   <span className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
                 )}
               </div>
-              <span className={`text-[10px] mt-1 font-medium tracking-tight ${isActive ? 'font-bold' : ''}`}>
+              <span className={`text-[10px] mt-1 font-medium tracking-tight truncate max-w-full ${isActive ? 'font-bold' : ''}`}>
                 {tab.label}
               </span>
             </button>

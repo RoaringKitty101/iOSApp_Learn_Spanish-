@@ -83,7 +83,7 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#F2F2F7] dark:bg-[#121318] w-full max-w-lg mx-auto h-[92vh] rounded-t-[36px] flex flex-col overflow-hidden shadow-2xl border-t border-white/20">
+      <div className="bg-[#F2F2F7] dark:bg-[#121318] w-full max-w-lg mx-auto h-[92dvh] max-h-[92dvh] rounded-t-[36px] flex flex-col overflow-hidden shadow-2xl border-t border-white/20">
         {/* iOS Grab bar & Close button */}
         <div className="pt-3 pb-2 px-6 flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-[#1c1c1e]/70 backdrop-blur-md">
           <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto absolute left-1/2 -translate-x-1/2 top-2.5" />
@@ -115,9 +115,9 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
         </div>
 
         {/* Step Tabs Navigation */}
-        <div className="flex items-center justify-around px-2 py-1.5 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 select-none">
+        <div className="grid grid-cols-4 gap-1 px-2 py-1.5 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 select-none shrink-0">
           {[
-            { id: 'vocab' as LessonTab, label: 'Vocabulary', icon: BookOpen },
+            { id: 'vocab' as LessonTab, label: 'Vocab', icon: BookOpen },
             { id: 'grammar' as LessonTab, label: 'Grammar', icon: Sparkles },
             { id: 'dialogue' as LessonTab, label: 'Dialogue', icon: MessageCircle },
             { id: 'quiz' as LessonTab, label: 'Quiz', icon: HelpCircle },
@@ -132,21 +132,21 @@ export const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
                   playHapticSound('tap');
                   setCurrentTab(tab.id);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-1 px-1.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer whitespace-nowrap min-w-0 ${
                   isActive
                     ? 'bg-white dark:bg-[#1c1c1e] text-[#007AFF] shadow-2xs'
                     : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{tab.label}</span>
               </button>
             );
           })}
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] space-y-4">
           {/* TAB 1: VOCABULARY */}
           {currentTab === 'vocab' && (
             <div className="space-y-3">

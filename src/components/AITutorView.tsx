@@ -211,35 +211,37 @@ export const AITutorView: React.FC<AITutorViewProps> = ({ progress, onSelectLang
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
+    <div className="flex-1 min-h-0 min-w-0 flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="px-4 pt-3 pb-3 border-b border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-[#1c1c1e]/70 backdrop-blur-md flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-xl text-white shadow-md shadow-purple-500/20">
+      <div className="px-4 pt-3 pb-3 shrink-0 border-b border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-[#1c1c1e]/70 backdrop-blur-md flex items-center justify-between gap-2 min-w-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-xl text-white shadow-md shadow-purple-500/20 shrink-0">
             {currentLang.tutorAvatar}
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <h2 className="text-sm font-black text-slate-900 dark:text-white">
+              <h2 className="text-sm font-black text-slate-900 dark:text-white truncate">
                 {currentLang.tutorName}
               </h2>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
               Native {currentLang.name} Coach • Day {progress.currentDay}
             </p>
           </div>
         </div>
 
-        <LanguageSelector
-          progress={progress}
-          onSelectLanguage={onSelectLanguage}
-          variant="pill"
-        />
+        <div className="shrink-0">
+          <LanguageSelector
+            progress={progress}
+            onSelectLanguage={onSelectLanguage}
+            variant="pill"
+          />
+        </div>
       </div>
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3.5">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4 space-y-3.5">
         {messages.map((msg) => {
           const isUser = msg.role === 'user';
           const isShown = showTranslations[msg.id] !== false;

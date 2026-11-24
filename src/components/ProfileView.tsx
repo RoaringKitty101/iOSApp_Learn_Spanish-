@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Award, Flame, BookCheck, Volume2, Star, Settings, RotateCcw, Download, CheckCircle, CheckCircle2, Sparkles, Bell, Clock, Globe, Target, Plus, HelpCircle, ChevronRight } from 'lucide-react';
+import { Award, Flame, BookCheck, Volume2, Star, Settings, RotateCcw, Download, CheckCircle, CheckCircle2, Sparkles, Bell, Clock, Globe, Target, Plus, HelpCircle, ChevronRight, Sun, Moon } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { UserProgress, SupportedLanguage } from '../types';
 import { getAllCurriculumVocabulary } from '../data/curriculum';
@@ -124,10 +124,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 pt-3 pb-8 space-y-4">
+    <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-4 pt-3 pb-8 space-y-4">
       {/* Header Profile card */}
-      <div className="bg-white dark:bg-[#1c1c1e] p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5 flex-1">
+      <div className="bg-white dark:bg-[#1c1c1e] p-4 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center justify-between gap-2.5 min-w-0">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#007AFF] to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-md shadow-blue-500/25 shrink-0">
             {currentLang.flag}
           </div>
@@ -463,6 +463,59 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </span>
         </button>
       )}
+
+      {/* Appearance: Light (Default) / Dark Theme */}
+      <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {progress.theme === 'dark' ? (
+              <Moon className="w-4 h-4 text-indigo-400" />
+            ) : (
+              <Sun className="w-4 h-4 text-amber-500" />
+            )}
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              Appearance
+            </h3>
+          </div>
+          <span className="text-[10px] font-bold text-slate-400">
+            {progress.theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            id="theme-light-btn"
+            onClick={() => {
+              playHapticSound('tap');
+              onUpdateProgress({ theme: 'light' });
+            }}
+            className={`py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              progress.theme !== 'dark'
+                ? 'bg-blue-50 dark:bg-blue-950/60 border-[#007AFF] text-[#007AFF] shadow-2xs'
+                : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+            }`}
+          >
+            <Sun className="w-4 h-4" />
+            <span>Light</span>
+          </button>
+
+          <button
+            id="theme-dark-btn"
+            onClick={() => {
+              playHapticSound('tap');
+              onUpdateProgress({ theme: 'dark' });
+            }}
+            className={`py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              progress.theme === 'dark'
+                ? 'bg-blue-50 dark:bg-blue-950/60 border-[#007AFF] text-[#007AFF] shadow-2xs'
+                : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+            }`}
+          >
+            <Moon className="w-4 h-4" />
+            <span>Dark</span>
+          </button>
+        </div>
+      </div>
 
       {/* Settings: Dialect & Speed */}
       <div className="bg-white dark:bg-[#1c1c1e] p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-4">

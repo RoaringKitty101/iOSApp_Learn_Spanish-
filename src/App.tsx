@@ -39,6 +39,17 @@ export function App() {
     saveUserProgress(progress);
   }, [progress]);
 
+  // Sync theme with <html> class and mobile theme-color meta (Light by default)
+  useEffect(() => {
+    const isDark = progress.theme === 'dark';
+    document.documentElement.classList.toggle('dark', isDark);
+
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', isDark ? '#121318' : '#F2F2F7');
+    }
+  }, [progress.theme]);
+
   // Service Worker auto-update registration
   useEffect(() => {
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
@@ -197,12 +208,12 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#E5E5EA] dark:bg-[#0c0d12] flex flex-col items-center justify-center p-0 sm:p-4 text-slate-900 dark:text-slate-100 font-sans selection:bg-[#007AFF] selection:text-white">
+    <div className="min-h-[100dvh] h-[100dvh] sm:h-auto sm:min-h-[100dvh] w-full max-w-full overflow-x-hidden bg-[#E5E5EA] dark:bg-[#0c0d12] flex flex-col items-center justify-center p-0 sm:p-4 text-slate-900 dark:text-slate-100 font-sans selection:bg-[#007AFF] selection:text-white">
       {/* Offline Status Badge */}
       <OfflineIndicator />
 
       {/* Top Device View Mode Switcher (visible on desktop) */}
-      <header className="hidden sm:flex items-center justify-between w-full max-w-sm mb-2 px-2 text-xs font-semibold text-slate-500 select-none">
+      <header className="hidden sm:flex items-center justify-between w-full max-w-sm mb-2 px-2 text-xs font-semibold text-slate-500 select-none shrink-0">
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span className="font-bold text-slate-700 dark:text-slate-300">Lingua30</span>
@@ -233,10 +244,10 @@ export function App() {
 
       {/* Main Container (iPhone Chassis or Edge-to-Edge Fluid) */}
       <div
-        className={`w-full transition-all duration-300 flex flex-col overflow-hidden bg-[#F2F2F7] dark:bg-[#121318] ${
+        className={`w-full max-w-full relative transition-all duration-300 flex flex-col overflow-hidden bg-[#F2F2F7] dark:bg-[#121318] ${
           isPhoneFrame
-            ? 'sm:max-w-[400px] sm:h-[844px] sm:rounded-[52px] sm:border-[10px] sm:border-slate-900 sm:dark:border-[#2c2d33] sm:shadow-2xl sm:shadow-black/35 relative'
-            : 'max-w-2xl h-screen sm:h-[90vh] sm:rounded-3xl sm:border border-slate-300 dark:border-slate-800 shadow-xl'
+            ? 'h-[100dvh] sm:max-w-[400px] sm:h-[min(844px,calc(100dvh-4.5rem))] sm:rounded-[52px] sm:border-[10px] sm:border-slate-900 sm:dark:border-[#2c2d33] sm:shadow-2xl sm:shadow-black/35'
+            : 'h-[100dvh] max-w-2xl sm:h-[min(90dvh,880px)] sm:rounded-3xl sm:border border-slate-300 dark:border-slate-800 shadow-xl'
         }`}
       >
         {/* iOS Status Bar with Dynamic Island and Fire Streak in Header */}
@@ -257,7 +268,7 @@ export function App() {
         <PWAInstallBanner />
 
         {/* Content View Switching */}
-        <main className="flex-1 flex flex-col overflow-hidden relative">
+        <main className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden relative">
           {activeTab === 'today' && (
             <TodayView
               progress={progress}

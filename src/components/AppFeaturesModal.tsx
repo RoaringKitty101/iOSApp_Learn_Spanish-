@@ -225,7 +225,7 @@ export const AppFeaturesModal: React.FC<AppFeaturesModalProps> = ({
     >
       <div
         id="app-features-modal-sheet"
-        className="bg-[#F2F2F7] dark:bg-[#121318] w-full max-w-lg mx-auto h-[90vh] rounded-t-[32px] flex flex-col overflow-hidden shadow-2xl border-t border-white/20"
+        className="bg-[#F2F2F7] dark:bg-[#121318] w-full max-w-lg mx-auto h-[90dvh] max-h-[90dvh] rounded-t-[32px] flex flex-col overflow-hidden shadow-2xl border-t border-white/20"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag Handle & Header */}
@@ -294,7 +294,7 @@ export const AppFeaturesModal: React.FC<AppFeaturesModalProps> = ({
         </div>
 
         {/* Scrollable Feature List */}
-        <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4">
           <div className="bg-white dark:bg-[#1c1c1e] rounded-3xl border border-slate-200/80 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800/90 overflow-hidden shadow-2xs">
             {filteredFeatures.map((item) => {
               const Icon = item.icon;
@@ -359,7 +359,7 @@ export const AppFeaturesModal: React.FC<AppFeaturesModalProps> = ({
         </div>
 
         {/* Sticky Bottom CTA */}
-        <div className="p-4 bg-white/90 dark:bg-[#1c1c1e]/90 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800">
+        <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shrink-0 bg-white/90 dark:bg-[#1c1c1e]/90 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800">
           <button
             id="done-features-guide-btn"
             onClick={() => {
